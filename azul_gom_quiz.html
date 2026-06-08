@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Quiz — Azul Handling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --navy:  #0a1628;
+  --navy2: #0f2040;
+  --blue:  #1a5aff;
+  --blue-dim: #1a3a8a;
+  --amber: #f59e0b;
+  --red:   #ef4444;
+  --green: #22c55e;
+  --gray:  #8b9ab0;
+  --gray-light: #c5d0e0;
+  --white: #f0f4ff;
+  --card:  #0d1e3a;
+  --card2: #112240;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(26,90,255,0.5);
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--white);font-family:var(--font-body);font-size:15px;line-height:1.6;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-right{display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.logo-badge{background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.06em}
+.header-logo{height:30px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:0.85}
+.header-divider{width:1px;height:28px;background:var(--border)}
+.header-meta{font-size:11px;color:var(--gray);text-align:right;line-height:1.5}
+
+/* LAYOUT */
+.app{max-width:600px;margin:0 auto;padding:32px 20px 80px}
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PANTALLA IDIOMA ── */
+#screen-lang{animation:fadeIn .4s ease;text-align:center;padding-top:20px}
+.lang-title{font-family:var(--font-display);font-size:42px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.1;margin-bottom:6px}
+.lang-title span{color:var(--blue)}
+.lang-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:420px;margin:0 auto}
+.lang-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 14px 22px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;user-select:none}
+.lang-card:hover{border-color:var(--border-hover);background:var(--card2);transform:translateY(-2px)}
+.lang-card:active{transform:translateY(0)}
+.lang-flag{font-size:38px;line-height:1;margin-bottom:10px}
+.lang-name{font-family:var(--font-display);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em}
+.lang-native{font-size:12px;color:var(--gray);margin-top:3px}
+
+/* ── PANTALLA QR ── */
+#screen-qr{animation:fadeIn .4s ease;text-align:center}
+.qr-title{font-family:var(--font-display);font-size:38px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.1;margin-bottom:6px}
+.qr-title span{color:var(--blue)}
+.qr-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.qr-frame{display:inline-flex;flex-direction:column;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 36px}
+#qr-canvas{border-radius:12px;overflow:hidden;background:#fff;padding:10px}
+.qr-url{font-size:12px;color:var(--gray);word-break:break-all;max-width:260px;text-align:center;line-height:1.5}
+.qr-hint{margin-top:28px;font-size:13px;color:var(--gray);display:flex;align-items:center;gap:8px;justify-content:center}
+.qr-hint-icon{width:20px;height:20px;opacity:0.5}
+.qr-enter-btn{margin-top:32px;background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:8px;padding:10px 24px;font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color .2s,color .2s}
+.qr-enter-btn:hover{border-color:var(--border-hover);color:var(--white)}
+
+/* ── PANTALLA SELECCIÓN ── */
+#screen-select{animation:fadeIn .35s ease;text-align:center}
+.sel-title{font-family:var(--font-display);font-size:34px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.sel-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:480px;margin:0 auto}
+.sel-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 20px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;user-select:none}
+.sel-card:hover{border-color:var(--border-hover);background:var(--card2);transform:translateY(-2px)}
+.sel-card:active{transform:translateY(0)}
+.sel-card-icon{font-size:36px;margin-bottom:12px;line-height:1}
+.sel-card-title{font-family:var(--font-display);font-size:26px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.sel-card-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.badge-boh{background:rgba(26,90,255,0.2);color:#7db3ff}
+.badge-foh{background:rgba(245,158,11,0.2);color:#fcd34d}
+.sel-card-desc{font-size:12px;color:var(--gray);line-height:1.5}
+
+/* ── PANTALLA QUIZ ── */
+#screen-quiz{animation:slideUp .3s ease}
+.quiz-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.quiz-progress-wrap{flex:1;min-width:180px}
+.quiz-progress-label{font-size:12px;color:var(--gray);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar-bg{background:var(--card);border-radius:99px;height:6px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .4s ease}
+.quiz-score-strip{display:flex;gap:14px;font-size:13px;align-items:center}
+.score-item{display:flex;align-items:center;gap:5px}
+.score-dot{width:8px;height:8px;border-radius:50%}
+.dot-ok{background:var(--green)}
+.dot-bad{background:var(--red)}
+.exit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.exit-btn:hover{border-color:var(--border-hover);color:var(--white)}
+
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px 24px 22px;animation:slideUp .3s ease}
+.q-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.q-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 9px;border-radius:5px}
+.tag-boh{background:rgba(26,90,255,0.2);color:#7db3ff}
+.tag-foh{background:rgba(245,158,11,0.2);color:#fcd34d}
+.q-topic{font-size:12px;color:var(--gray)}
+.q-num-badge{margin-left:auto;font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--gray)}
+.q-text{font-size:16px;font-weight:500;line-height:1.55;margin-bottom:18px;color:#e8eeff}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt-btn{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;text-align:left;color:var(--white);font-size:14px;line-height:1.5;font-family:var(--font-body);width:100%;transition:border-color .15s,background .15s}
+.opt-btn:hover:not(:disabled){border-color:var(--border-hover);background:#0f2a50}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:var(--green);background:rgba(34,197,94,0.08)}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,0.08)}
+.opt-letter{font-family:var(--font-display);font-size:15px;font-weight:700;min-width:22px;padding-top:1px;color:var(--gray);flex-shrink:0;transition:color .15s}
+.opt-btn.correct .opt-letter{color:var(--green)}
+.opt-btn.wrong .opt-letter{color:var(--red)}
+.feedback-box{margin-top:14px;padding:13px 16px;border-radius:10px;font-size:13px;line-height:1.55;display:none;animation:fadeIn .25s ease}
+.feedback-box.show{display:block}
+.feedback-box.ok{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#a7f3c0}
+.feedback-box.bad{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+.feedback-box strong{font-weight:600}
+.q-nav{display:flex;justify-content:flex-end;margin-top:18px}
+.next-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:11px 28px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;display:none;align-items:center;gap:8px;transition:background .15s}
+.next-btn.show{display:flex}
+.next-btn:hover{background:#1248cc}
+.next-btn svg{width:16px;height:16px}
+
+/* ── PANTALLA RESULTADO ── */
+#screen-result{animation:fadeIn .35s ease}
+.result-hero{text-align:center;padding:36px 20px 30px}
+.result-emoji{font-size:60px;line-height:1;margin-bottom:14px}
+.result-pct{font-family:var(--font-display);font-size:76px;font-weight:800;line-height:1;margin-bottom:6px}
+.result-label{font-size:15px;color:var(--gray);margin-bottom:28px}
+.result-grade{display:inline-block;font-family:var(--font-display);font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:7px 22px;border-radius:8px;margin-bottom:32px}
+.grade-pass{background:rgba(34,197,94,0.2);color:#86efac;border:1px solid rgba(34,197,94,0.4)}
+.grade-ok{background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.4)}
+.grade-fail{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4)}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 12px;text-align:center}
+.stat-val{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em}
+.val-ok{color:var(--green)}.val-bad{color:var(--red)}.val-neutral{color:var(--blue)}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:13px 26px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1248cc}
+.btn-secondary{background:transparent;color:var(--white);border:1px solid var(--border);border-radius:8px;padding:13px 26px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color .15s}
+.btn-secondary:hover{border-color:var(--border-hover)}
+.review-section{margin-top:36px}
+.review-title{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;color:var(--red);display:flex;align-items:center;gap:10px}
+.review-title::after{content:'';flex:1;height:1px;background:rgba(239,68,68,0.3)}
+.review-card{background:var(--card);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:16px 18px;margin-bottom:10px}
+.review-q{font-size:14px;font-weight:500;margin-bottom:10px;color:#e8eeff;line-height:1.5}
+.review-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;margin-bottom:5px}
+.review-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.review-correct{color:#86efac}.review-given{color:#fca5a5}
+.review-explain{margin-top:10px;font-size:12px;color:var(--gray);line-height:1.55;padding-top:10px;border-top:1px solid var(--border)}
+
+@media(max-width:500px){
+  .sel-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .sel-card{padding:22px 12px}
+  .sel-card-title{font-size:20px}
+  .qr-title{font-size:28px}
+  .result-pct{font-size:56px}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-left">
+    <img class="header-logo" src="data:image/png;base64,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" alt="Azul Handling">
+    <div class="header-divider"></div>
+    <div class="logo">
+      <span>Safety Quiz</span>
+      <span class="logo-badge">GOM</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <img class="header-logo" src="data:image/png;base64,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" alt="Ryanair">
+    <div class="header-meta">
+      Issue 10 · Rev 0
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ── PANTALLA QR ── -->
+  <section id="screen-qr" class="hidden">
+    <div style="margin-bottom:12px">
+      <div class="qr-title">Escanea<br><span>& Practica</span></div>
+      <p class="qr-sub">Accede al cuestionario de seguridad operacional desde tu móvil</p>
+    </div>
+    <div class="qr-frame">
+      <div id="qr-canvas"></div>
+      <div class="qr-url">https://floncis.github.io/Safety-Quiz/azul_gom_quiz.html</div>
+    </div>
+    <div class="qr-hint">
+      <svg class="qr-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Apunta la cámara del móvil al código QR
+    </div>
+    <br>
+    <button class="qr-enter-btn" onclick="show('screen-lang')">
+      Entrar directamente →
+    </button>
+  </section>
+
+  <!-- ── PANTALLA IDIOMA ── -->
+  <section id="screen-lang">
+    <div class="lang-title">Choose<br><span>Language</span></div>
+    <p class="lang-sub">Select your language / Selecciona tu idioma / Selecione o idioma</p>
+    <div class="lang-grid">
+      <div class="lang-card" onclick="setLang('es')">
+        <div class="lang-flag">🇪🇸</div>
+        <div class="lang-name">ES</div>
+        <div class="lang-native">Español</div>
+      </div>
+      <div class="lang-card" onclick="setLang('en')">
+        <div class="lang-flag">🇬🇧</div>
+        <div class="lang-name">EN</div>
+        <div class="lang-native">English</div>
+      </div>
+      <div class="lang-card" onclick="setLang('pt')">
+        <div class="lang-flag">🇵🇹</div>
+        <div class="lang-name">PT</div>
+        <div class="lang-native">Português</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA SELECCIÓN ── -->
+  <section id="screen-select" class="hidden">
+    <div class="sel-title">Elige tu módulo</div>
+    <p class="sel-sub">Se seleccionarán 3 preguntas aleatorias del módulo elegido</p>
+    <div class="sel-grid">
+      <div class="sel-card" onclick="startQuiz('boh')">
+        <div class="sel-card-icon">✈️</div>
+        <div class="sel-card-badge badge-boh">BOH</div>
+        <div class="sel-card-title">Rampa</div>
+        <div class="sel-card-desc">Pushback · Carga · GSE · Walkaround · Zonas de peligro</div>
+      </div>
+      <div class="sel-card" onclick="startQuiz('foh')">
+        <div class="sel-card-icon">🛂</div>
+        <div class="sel-card-badge badge-foh">FOH</div>
+        <div class="sel-card-title">Pasaje</div>
+        <div class="sel-card-desc">Check-in · Embarque · Equipaje · Pasajeros · LID</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA QUIZ ── -->
+  <section id="screen-quiz" class="hidden">
+    <div class="quiz-topbar">
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-label">
+          <span id="prog-text">Pregunta 1 de 3</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="quiz-score-strip">
+        <div class="score-item"><div class="score-dot dot-ok"></div><span id="live-ok">0</span></div>
+        <div class="score-item"><div class="score-dot dot-bad"></div><span id="live-bad">0</span></div>
+        <button class="exit-btn" onclick="confirmAbort()"><span id="exit-btn-lbl">Salir</span></button>
+      </div>
+    </div>
+    <div class="q-card" id="q-card">
+      <div class="q-header">
+        <span class="q-tag" id="q-tag">RAMPA</span>
+        <span class="q-topic" id="q-topic"></span>
+        <span class="q-num-badge" id="q-num">1/3</span>
+      </div>
+      <p class="q-text" id="q-text"></p>
+      <div class="options" id="q-opts"></div>
+      <div class="feedback-box" id="q-fb"></div>
+      <div class="q-nav">
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+          Siguiente
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA RESULTADO ── -->
+  <section id="screen-result" class="hidden">
+    <div class="result-hero">
+      <div class="result-emoji" id="res-emoji">🎯</div>
+      <div class="result-pct" id="res-pct">0%</div>
+      <div class="result-label" id="res-label">0 correctas de 3 preguntas</div>
+      <div class="result-grade" id="res-grade">—</div>
+    </div>
+    <div class="result-stats">
+      <div class="stat-card"><div class="stat-val val-ok" id="res-ok">0</div><div class="stat-lbl">Correctas</div></div>
+      <div class="stat-card"><div class="stat-val val-bad" id="res-bad">0</div><div class="stat-lbl">Incorrectas</div></div>
+      <div class="stat-card"><div class="stat-val val-neutral" id="res-total">0</div><div class="stat-lbl">Total</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" id="btn-repeat" onclick="restartSame()">Repetir (nuevas preguntas)</button>
+      <button class="btn-secondary" id="btn-change" onclick="show('screen-select')">Cambiar módulo</button>
+    </div>
+    <div class="review-section" id="review-section"></div>
+  </section>
+
+</div>
+
+<script>
+const QUIZ_URL = 'https://floncis.github.io/Safety-Quiz/azul_gom_quiz.html';
+
+const ALL_QUESTIONS = {
+es:{boh:[
+  {t:"Zonas de peligro",q:"¿Cuándo está permitido acercarse a una aeronave con las luces anticolisión encendidas?",o:["Nunca; con las luces anticolisión encendidas nadie puede aproximarse bajo ninguna circunstancia","Solo para colocar los calzos en el tren de morro (NLG) y conectar la GPU; cualquier otro acercamiento requiere luces apagadas y motores parados","Siempre que el supervisor de rampa haya dado la señal de aproximación segura"],c:1,f:"GOM 4.2.3: la única excepción es colocar los calzos del NLG y conectar la GPU."},
+  {t:"Señal safe to approach",q:"¿Quién autoriza la señal 'safe to approach' tras la llegada?",o:["El piloto desde cabina levantando el pulgar","El Responsible Person en rampa, tras confirmar luces anticolisión apagadas y motores parados; señal: ambos brazos/wands a 90° avanzados hacia adelante","El agente de headset tras confirmar con la torre que los motores están parados"],c:1,f:"GOM 4.3.2.4: el Responsible Person verifica luces apagadas y motores parados antes de emitir la señal."},
+  {t:"Walkaround",q:"¿Cuándo debe realizarse el walkaround de llegada según el GOM?",o:["Solo si el comandante lo solicita o hay sospecha de daños","Tras todas las llegadas y antes de todas las salidas; también en primer vuelo del día, después de firebreaks y cambios de aeronave","Una vez al día, al inicio de la primera rotación"],c:1,f:"GOM 4.3.3: walkarounds obligatorios tras todas las llegadas y antes de todas las salidas."},
+  {t:"Walkaround — daños",q:"Si durante el walkaround previo a la salida se detecta daño no marcado en el fuselaje, ¿qué acción se requiere?",o:["Registrarlo en el log de la base y notificarlo al siguiente turno","Comunicarlo inmediatamente al comandante, a Engineering y al personal de supervisión, y emitir un Ground Safety Report","Continuar la operación y notificarlo en el siguiente turnaround"],c:1,f:"GOM 4.3.6.3: cualquier anomalía debe reportarse de inmediato al comandante, Engineering y supervisión."},
+  {t:"FOD",q:"¿Qué riesgos concretos puede generar el FOD (Foreign Object Debris)?",o:["Exclusivamente daños a los neumáticos y al tren de aterrizaje","Ingestión en motores, daños a neumáticos/tren/sistemas de control y riesgo de tropiezos para el personal","Solo riesgo de ingesta por motores durante el arranque"],c:1,f:"GOM 4.2.7: el FOD puede ser ingerido por motores, dañar estructuras y suponer riesgo de tropiezos."},
+  {t:"FOD — contenedores",q:"¿Qué condición deben cumplir los contenedores de FOD en rampa?",o:["Estar pintados de amarillo y en el perímetro del ERA","Ser cerrados/con tapa para evitar que el viento disperse su contenido","Vaciarse al inicio de cada turno"],c:1,f:"GOM 4.2.7: los contenedores de FOD deben ser cerrados para evitar que el viento los disperse."},
+  {t:"Pushback — equipo",q:"¿Cuántos miembros de equipo son obligatorios en un pushback con tug y towbar?",o:["Dos: tug driver y headset operator","Tres: tug driver, headset operator y wingman","Cuatro: tug driver, headset operator, wingman y brake rider en cabina"],c:1,f:"GOM 4.3.7.6: pushback con tug y towbar requiere tres personas."},
+  {t:"Pushback — wingman",q:"¿Qué debe hacer el wingman si detecta un peligro durante el pushback?",o:["Avisar verbalmente al tug driver y esperar confirmación","Dar la señal STOP de inmediato, manteniendo contacto visual con tug driver y headset operator","Detener el pushback solo si el peligro afecta al área del morro"],c:1,f:"GOM 4.3.6.4: el wingman debe dar la señal STOP inmediatamente ante cualquier peligro."},
+  {t:"Pushback — All Clear",q:"¿Cuándo puede el headset operator dar la señal final 'All Clear' al comandante?",o:["Inmediatamente después de que el tug haya frenado","Solo cuando tug, towbar y wingman están despejados, los motores arrancan normalmente y el comandante aprueba la desconexión","Cuando el tug driver confirma verbalmente que el freno de estacionamiento está puesto"],c:1,f:"GOM 4.3.7.11: solo cuando tug, towbar y wingman están despejados y los motores han arrancado normalmente."},
+  {t:"Pushback — fraseología",q:"¿Qué frase confirma el ground crew al comandante para iniciar el pushback?",o:["'Ready for pushback, parking brake set'","'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'","'Ground crew in position, cleared to push'"],c:1,f:"GOM 4.3.7.5: ground crew confirma 'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'."},
+  {t:"Pushback — zonas de peligro",q:"Durante el pushback, ¿en qué áreas deben permanecer alejados todos los miembros del equipo?",o:["Solo del área de ingesta de motores y la trayectoria del avión","Del área bajo cualquier parte del avión, la trayectoria del avión, la del tractor y el área de peligro del motor","Solo del área de exhaust de motores y del towbar"],c:1,f:"GOM 4.3.7.7: durante el pushback todo el personal debe mantenerse alejado del área bajo el avión, sus trayectorias y el área de peligro del motor."},
+  {t:"Bypass pin",q:"¿Qué debe verificar el headset operator tras desconectar el towbar y retirar el bypass pin?",o:["Que el freno de estacionamiento del tractor esté puesto","Que el steering lock-out lever ha vuelto a su posición; si detecta fallo, debe informar al comandante","Que el wingman ha abandonado la zona de maniobra"],c:1,f:"GOM 4.3.7.11 d): debe confirmarse que el steering lock-out lever ha vuelto a su posición."},
+  {t:"Chocks",q:"¿Bajo qué condición pueden retirarse los calzos del tren de morro sin notificación previa?",o:["Nunca; la retirada de cualquier calzo requiere confirmación del comandante","Para facilitar la conexión del tug, siempre que los calzos del tren principal (MLG) permanezcan colocados","Solo con las luces anticolisión apagadas y autorización escrita"],c:1,f:"GOM 4.3.6.2: los calzos del NLG pueden retirarse sin notificación previa para facilitar la conexión del tug, siempre que los del MLG sigan colocados."},
+  {t:"Móviles en rampa",q:"¿Qué restricción aplica al uso del móvil durante el repostaje?",o:["Completamente prohibido en ambos lados del avión durante el repostaje","Solo se permite en el lado opuesto (izquierdo) del avión durante el repostaje","Se puede usar libremente para comunicación de trabajo con el supervisor"],c:1,f:"GOM 4.2.6: durante el repostaje el móvil solo se permite en el lado opuesto (izquierdo) del avión."},
+  {t:"Bodegas",q:"¿Qué se debe hacer si una puerta de bodega no abre durante el turnaround?",o:["Aplicar fuerza adicional si la puerta está desbloqueada","No usar fuerza excesiva; contactar con Engineering y notificar al comandante o supervisor","Solicitar al comandante que la abra desde cabina"],c:1,f:"GOM 4.3.5.1 f): no usar fuerza excesiva; contactar con Engineering y notificar al comandante o supervisor."},
+  {t:"Bodegas — aproximación",q:"¿Cuándo está prohibido acercarse a las puertas de bodega aunque el avión esté estacionado?",o:["Cuando hay pasajeros desembarcando","Cuando los motores no han completado su deceleración, las luces anticolisión no están apagadas o no se ha dado la señal de aproximación segura","Solo cuando el comandante lo indica explícitamente"],c:1,f:"GOM 4.3.5.1 b): no aproximarse a puertas de bodega hasta que los motores hayan decelerado, las luces estén apagadas y se haya dado la señal."},
+  {t:"Orden de carga",q:"¿En qué orden deben cargarse y descargarse las bodegas de la B737 para evitar el vuelco?",o:["Cargar y descargar siempre de proa a popa uniformemente","Descarga: AFT primero, FWD al final. Carga: FWD primero, AFT al final","Comenzando siempre por la bodega más accesible"],c:1,f:"GOM 5.7.5: descarga → AFT primero, FWD al final. Carga → FWD primero, AFT al final."},
+  {t:"Hold 3",q:"¿Qué carga máxima puede cargarse en la bodega AFT Hold 3 antes del embarque o desembarque?",o:["Sin límite si los pasajeros aún no han comenzado","Un máximo de 1.000 kg de carga o repuestos; la Hold 4 debe permanecer vacía","500 kg, y solo si el comandante lo autoriza en el LIR"],c:1,f:"GOM 5.7.6: límite de 1.000 kg en AFT Hold 3; la Hold 4 debe permanecer vacía."},
+  {t:"GSE — frenos",q:"¿Cuándo debe realizarse la verificación de frenos del GSE motorizado antes de entrar en el ERA?",o:["Al inicio del turno, antes de la primera operación del día","Al menos una vez antes de entrar en el ERA o a 5 metros del avión, aunque no haya línea de contención marcada","Solo si se detecta irregularidad durante la inspección visual"],c:1,f:"GOM 4.5.2 a): la verificación de frenos del GSE debe realizarse al menos una vez antes de entrar en el ERA o a 5 metros del avión."},
+  {t:"GSE — marshaller",q:"¿Cuándo se requiere un marshaller para posicionar o retirar GSE junto al avión?",o:["Siempre que el GSE tenga más de 2 toneladas","Cuando la distancia al avión es inferior a 2 metros y el GSE no tiene sensores/cámaras/espejos ni el operador tiene línea de visión directa","Solo cuando la iluminación es insuficiente o hay niebla"],c:1,f:"GOM 4.5.2 d): se requiere marshaller para posicionar/retirar GSE a menos de 2 metros del avión sin visión directa."},
+  {t:"GSE — danger area",q:"¿Qué está expresamente prohibido respecto a un tractor al que ya está conectado GSE?",o:["Arrancar el motor sin haber comprobado los frenos","Reentrar en la zona de peligro una vez que el GSE está conectado, sin avisar primero al conductor","Aparcar el tractor en el ERA con el GSE conectado"],c:1,f:"GOM 4.5.1 n): está prohibido reentrar en la zona de peligro sin alertar primero al conductor."},
+  {t:"GPU — ganchos",q:"¿Qué tipo de ganchos están prohibidos para fijar el cable de la GPU al avión?",o:["Los ganchos de plástico","Los ganchos metálicos; solo se permiten los de plástico","Los ganchos de velcro o tela"],c:1,f:"GOM 4.5.6 e): los ganchos metálicos están expresamente prohibidos para sujetar el cable de GPU al avión."},
+  {t:"GPU — desconexión",q:"¿Qué verificación debe hacer el agente de tierra antes de desconectar la GPU?",o:["Comprobar que el APU está operativo","Solicitar siempre la aprobación del comandante antes de desconectar, usando señales manuales o headset","Confirmar que ningún pasajero está a bordo"],c:1,f:"GOM 4.5.6 f): siempre se debe solicitar la aprobación del comandante antes de desconectar la GPU."},
+  {t:"Seguridad de aeronave",q:"¿Qué principio fundamental rige la seguridad de la aeronave según el cap. 6.5 del GOM?",o:["Ningún pasajero puede aproximarse al avión sin tarjeta de embarque validada","Ninguna persona autorizada puede dejar la aeronave desatendida y desprotegida; la última persona en salir debe asegurar que queda protegida","El avión debe tener siempre al menos dos puertas abiertas para facilitar la inspección"],c:1,f:"GOM 6.5: ninguna persona autorizada puede dejar un avión sin supervisión y sin protección."},
+  {t:"Hold check",q:"Según el Reglamento (CE) 300/2008, ¿cuándo NO se requiere un hold check en aeropuertos de la UE?",o:["Nunca; el hold check es obligatorio en todos los vuelos","En aeronaves que llegan y salen de la parte crítica de un aeropuerto de la UE; si se requiere: inspección visual primero y registro manual si no se confirma la integridad","Solo en vuelos domésticos dentro del espacio Schengen"],c:1,f:"GOM 6.5.2: las aeronaves que llegan y salen de la parte crítica de un aeropuerto de la UE no requieren hold check."},
+  {t:"Remolque — brake rider",q:"¿Quién debe ocupar el asiento de cabina durante una operación de remolque?",o:["Un agente de handling formado como brake rider, ingeniero, o tripulación de vuelo aprobada","El comandante de la aeronave en todo momento","No es necesario ningún brake rider si el tug driver es el responsable del frenado"],c:0,f:"GOM 4.4.1: debe haber un brake rider cualificado en cabina durante el remolque."},
+  {t:"Remolque — 20 pies",q:"¿Qué señal debe emitirse si cualquier obstáculo está a menos de 20 pies (6 m) del avión durante el remolque?",o:["El tug driver detiene la operación y espera instrucciones de la torre","La persona responsable emite la alarma con señales manuales y/o bocinazos; si no se reconoce, deben repetirse hasta detener el remolque","Solo se requiere ampliar el radio de separación a 10 metros"],c:1,f:"GOM 4.4.5: si cualquier estructura está a menos de 20 pies del avión, la persona responsable debe activar la alarma con señales y/o bocinazos."},
+  {t:"PPE",q:"¿Qué obligación tiene el personal si detecta PPE defectuoso o inadecuado?",o:["Puede seguir usándolo si el defecto es menor","Debe reportarlo a la dirección y no usarlo","Puede intercambiarlo con otro agente"],c:1,f:"GOM 6.3.2: el PPE defectuoso debe reportarse a la dirección y no debe usarse."},
+  {t:"Ramp fire safety",q:"¿Qué restricción aplica a los vehículos de repostaje en el área del avión?",o:["Solo pueden acceder con el APU apagado","El acceso y egreso de los vehículos de repostaje no debe obstruirse; las salidas de emergencia del avión no pueden obstruirse en ningún momento","Deben aparcar siempre a barlovento del avión"],c:1,f:"GOM 6.3.4: el acceso/egreso de vehículos de repostaje no debe obstruirse y las salidas de emergencia no deben bloquearse."},
+  {t:"Rapid disembarkation",q:"¿Cuál es la diferencia fundamental entre 'rapid disembarkation' y una evacuación de emergencia completa?",o:["No hay diferencia; ambos términos son sinónimos","El rapid disembarkation es preventivo sin peligro inmediato; en ambos casos los pasajeros llevan su equipaje","El rapid disembarkation es un procedimiento preventivo sin peligro inmediato en el que todos dejan sus pertenencias a bordo; el comandante puede escalar a evacuación completa"],c:2,f:"GOM 6.3.6: el rapid disembarkation es preventivo, sin peligro inmediato, y todos dejan sus pertenencias a bordo."}
+],foh:[
+  {t:"Seguridad check-in",q:"¿Qué debe hacer el agente cuando completa el check-in de un pasajero con equipaje?",o:["Verificar solo el documento de viaje y el peso del equipaje","Confirmar que el pasajero no transporta mercancías peligrosas, además de verificar documentación y peso","Pedir al pasajero que firme una declaración sin confirmación verbal"],c:1,f:"GOM 1.2.1: el agente debe confirmar que el pasajero no transporta mercancías peligrosas."},
+  {t:"Clean Desk Policy",q:"¿Qué exige la 'Clean Desk Policy' para el personal en áreas públicas?",o:["Tener siempre visible la documentación del vuelo en el mostrador","No dejar documentos en blanco de Ryanair ni datos sensibles sobre superficies públicas","Guardar toda la documentación en armarios cerrados durante las pausas"],c:1,f:"GOM 1.1: no pueden dejarse documentos en blanco ni datos sensibles sobre superficies públicas."},
+  {t:"Equipaje de mano",q:"¿Cuántas bolsas de cabina puede llevar a bordo un pasajero sin priority boarding?",o:["Dos: una pequeña y una de 10 kg","Solo una bolsa pequeña (40×30×20 cm) más una bolsa de duty free (35×20×20 cm)","Una bolsa pequeña y un bolso de mano de cualquier tamaño"],c:1,f:"GOM 2.1.1: sin priority boarding solo se permite 1 bolsa pequeña más 1 bolsa de duty free."},
+  {t:"Hold bag — artículos prohibidos",q:"¿Qué elementos debe retirar el pasajero de su equipaje de bodega antes de facturarlo?",o:["Únicamente artículos de valor superiores a 100 euros","Baterías de litio de repuesto, portátiles, tablets y cigarrillos electrónicos; también objetos de valor y documentos importantes","Solo los líquidos que superen los 100 ml"],c:1,f:"GOM 2.1.2.2: retirar del hold bag baterías de litio de repuesto, portátiles, tablets y e-cigarettes."},
+  {t:"NON-PRIORITY boarding",q:"Si en el embarque un pasajero NON-PRIORITY lleva una segunda bolsa grande de cabina, ¿cuál es el procedimiento correcto?",o:["Permitir el embarque y registrar el incidente","Informar cortésmente que la segunda bolsa debe facturarse con el cargo aplicable; tras el pago, indicar que mueva objetos de valor, documentos, medicamentos, electrónicos y baterías de litio a su bolsa pequeña","Confiscar la segunda bolsa y devolverla en destino"],c:1,f:"GOM 2.1.2.3: informar del cargo; tras el pago, mover objetos de valor, documentos, medicamentos y baterías a la bolsa pequeña."},
+  {t:"Límite de peso",q:"¿Cuál es el límite de peso individual por encima del cual un artículo no se acepta para transporte?",o:["25 kg","32 kg, salvo para EMAs (Electric Mobility Aids)","40 kg"],c:1,f:"GOM 2.2.1.2: los artículos individuales de más de 32 kg no se aceptan. La excepción son los EMAs."},
+  {t:"Etiqueta Heavy",q:"¿Qué etiqueta especial debe colocarse en los equipajes que superan los 23 kg?",o:["Etiqueta roja de 'Oversize'","Etiqueta 'Heavy' con el peso indicado","Etiqueta 'Fragile'"],c:1,f:"GOM 2.2.1.2 b): los equipajes de más de 23 kg deben etiquetarse como 'Heavy'."},
+  {t:"Check-in avanzado",q:"En el check-in avanzado/nocturno, ¿cuánto tiempo mínimo debe permanecer el pasajero en el terminal tras depositar su equipaje?",o:["Puede marcharse inmediatamente","10 minutos, para poder responder cualquier pregunta de seguridad durante el proceso de screening","30 minutos, para facilitar la reconciliación pasajero-equipaje"],c:1,f:"GOM 2.2.1.4 f): los pasajeros deben permanecer 10 minutos en el terminal tras el advance bag drop."},
+  {t:"Check-in avanzado — problema",q:"Si en el check-in avanzado hay problemas con el equipaje de un pasajero no disponible, ¿qué ocurre con sus maletas?",o:["Se cargan con etiqueta de incidencia para resolver en destino","Se retienen por separado y no se cargan hasta resolver el problema; si el pasajero no aparece, se retiran antes de la salida","Se entregan a otro pasajero del mismo vuelo"],c:1,f:"GOM 2.2.1.4 h) e i): las maletas se retienen por separado hasta resolver el problema."},
+  {t:"No-show baggage",q:"¿Qué obliga el GOM respecto a los equipajes de pasajeros que no se presentan al embarque?",o:["Pueden volar si el agente certifica que fueron inspeccionados por rayos X","Los equipajes de no-show passengers se retiran antes de la salida","Pueden volar si el weight & balance lo permite y el comandante da su autorización"],c:1,f:"GOM 2.2.1.4 k): 'Bags of no-show passengers will be removed before departure'."},
+  {t:"Dangerous goods",q:"¿Qué señalización sobre mercancías peligrosas es obligatoria según el GOM?",o:["Solo en el mostrador de facturación y en la puerta de embarque","En áreas de ticketing, baggage drop y boarding; en los kioscos SSBD el proceso no puede completarse hasta que el pasajero reconoce las restricciones","Solo en los mostradores de facturación, en idioma local"],c:1,f:"GOM 1.1 y 1.2.1: la información DG se muestra en ticketing, baggage drop y boarding."},
+  {t:"SSBD — artículos prohibidos",q:"Al descubrir artículos prohibidos en el kiosko de auto bag drop (SSBD), ¿qué acciones son obligatorias?",o:["Denegar el boarding solo","Denegar el boarding, registrar y reportar a la autoridad aeroportuaria y al servicio de seguridad del estado de ocurrencia, y presentar un Ground Safety Report","Solo informar al supervisor de turno"],c:1,f:"GOM 1.2.3.2: denegar boarding, registrar el incidente, reportar a la autoridad aeroportuaria y presentar un Ground Safety Report."},
+  {t:"EMA — confirmación seguridad",q:"¿Quién confirma que un EMA (Electric Mobility Aid) es seguro para el transporte antes de la carga?",o:["El agente de handling, que inspecciona la batería de forma independiente","El proveedor de PRM confirma que la batería está aislada o retirada; ambas partes verifican esto antes de la carga","El comandante"],c:1,f:"GOM 5.5.3: el proveedor de PRM y el handling agent verifican juntos que el EMA es seguro antes de la carga."},
+  {t:"EMA — número máximo",q:"¿Cuál es el número máximo de EMAs que permite transportar Ryanair en un vuelo?",o:["Uno por vuelo","Dos por vuelo","Sin límite si las dimensiones son conformes"],c:1,f:"GOM 5.5.3: Ryanair solo permite el transporte de dos EMAs por vuelo."},
+  {t:"EMA — bodega",q:"¿Dónde debe cargarse el primer EMA en la bodega de la B737?",o:["En Hold 3 (bodega trasera)","En Hold 1 (bodega delantera); si hay un EMA en Hold 1, cargar buggies y gate bags en Hold 2; EMAs adicionales en Hold 3","En Hold 2 (bodega central)"],c:1,f:"GOM 5.5.4: el primer EMA se carga en Hold 1; EMAs adicionales en Hold 3."},
+  {t:"Marshalling de pasajeros",q:"¿Qué exige el GOM sobre el movimiento de pasajeros entre la puerta de embarque y el avión en rampa abierta?",o:["No hay requisitos especiales si los motores están parados","Debe asignarse siempre a un individuo específico para supervisar a los pasajeros entre el avión y el terminal","El personal de cabina es el único responsable del control de pasajeros en rampa"],c:1,f:"GOM 6.3.5: un individuo específico debe asignarse siempre para el marshalling de pasajeros."},
+  {t:"Boarding sin flight crew",q:"¿Bajo qué condición pueden los cabin crew embarcar pasajeros sin que esté la tripulación de vuelo?",o:["Solo si el retraso previsto es inferior a 15 minutos y el comandante autorizó por radio","Pueden embarcar sin tripulación de vuelo aplicando todos los procedimientos del capítulo 1, hasta que al menos un miembro de tripulación de vuelo esté a bordo","No está permitido bajo ninguna circunstancia"],c:1,f:"GOM 6.3.7: la cabin crew puede embarcar sin tripulación de vuelo en circunstancias excepcionales, aplicando todos los procedimientos del cap. 1."},
+  {t:"Reporte de seguridad",q:"¿Qué información mínima debe incluir un reporte de brecha de seguridad?",o:["Solo el nombre del reportante y una descripción general","Ubicación, hora, personas involucradas y detalles del incidente; el reporte debe ser conciso, preciso y factual","Solo indicar si la amenaza es interna o externa"],c:1,f:"GOM 6.4: los reportes deben incluir ubicación, hora, individuos involucrados y detalles del incidente."},
+  {t:"Reporte de seguridad — cuándo",q:"¿Cuándo debe reportarse una brecha de seguridad o actividad sospechosa?",o:["Antes del final del turno de trabajo","Lo antes posible ('as soon as practicable'), comunicándolo a un supervisor o a la autoridad aeroportuaria","En las 24 horas siguientes"],c:1,f:"GOM 6.4: reportar de inmediato cualquier brecha de seguridad o actividad sospechosa."},
+  {t:"Obligación seguridad",q:"¿Qué obligación tienen todos los empleados de ground operations respecto a la seguridad aérea?",o:["Informar solo de incidentes que afecten directamente a sus funciones","Reportar inmediatamente cualquier brecha de seguridad o actividad sospechosa y recibir formación inicial y recurrente","Completar un checklist de seguridad al inicio y al final de cada turno"],c:1,f:"GOM 6.4: todo el personal debe reportar de inmediato cualquier brecha de seguridad y recibir formación inicial y recurrente."},
+  {t:"Amenazas a la aviación",q:"¿Desde qué áreas pueden originarse amenazas a la aviación civil según el cap. 6.4.1 del GOM?",o:["Solo desde el lado aire (airside)","Tanto del lado tierra (landside) como del lado aire (airside), incluyendo instalaciones terminales, áreas de equipaje, instalaciones de tripulación, transporte y aviones en tierra o en vuelo","Solo desde el exterior del perímetro aeroportuario"],c:1,f:"GOM 6.4.1: tanto las áreas landside como airside pueden ser objetivo."},
+  {t:"Comunicación — idioma",q:"¿En qué idioma debe realizarse toda la comunicación entre ground crew y tripulación de vuelo?",o:["En el idioma oficial del estado en que opera el aeropuerto","Siempre en inglés; el personal con comunicación regular con tripulación de vuelo debe poder comunicarse eficazmente en inglés","En inglés para vuelos internacionales y en idioma local para domésticos"],c:1,f:"GOM 6.4.2: toda la comunicación headset entre ground crew y tripulación de vuelo debe realizarse en inglés."},
+  {t:"eLID — fallo",q:"¿Qué ocurre si el comandante no confirma la aceptación del eLID por problemas de conexión o fallo del dispositivo?",o:["El vuelo se retrasa hasta restablecer la conexión","Debe aplicarse el proceso de LID en papel","El dispatcher puede confirmar el eLID en nombre del comandante"],c:1,f:"GOM 5.7.1: si no se recibe confirmación del comandante del eLID, debe aplicarse el proceso de LID en papel."},
+  {t:"LID — conservación",q:"¿Cuánto tiempo debe conservar el ground service provider una copia del LID en papel?",o:["7 días","3 meses","12 meses"],c:1,f:"GOM 5.7.1: el ground service provider conserva una copia del LID en papel durante 3 meses."},
+  {t:"LID — pre-firma",q:"¿Está permitido pre-firmar el LIR o el LID antes de que se complete la carga?",o:["Sí, si el supervisor de carga garantiza que la información es correcta","No; pre-signing LIR/LID no está permitido bajo ninguna circunstancia","Solo si hay más de 3 horas de margen hasta la salida"],c:1,f:"GOM 5.6 y 5.7.1: 'Documents must never be pre-signed'. Pre-signing LIR/LID no está permitido."},
+  {t:"Manual check-in",q:"¿Con qué frecuencia mínima debe cada aeropuerto base realizar el ejercicio de check-in manual?",o:["Una vez al mes","Una vez a la semana para bases y una vez al mes para aeropuertos; si hay L-DCS disponible en una base, una vez al mes es aceptable","Una vez por trimestre o cuando el sistema principal falle"],c:1,f:"GOM 1.2.3.2: 1 vuelo por semana para bases y 1 por mes para aeropuertos."},
+  {t:"Identidad en boarding",q:"¿Qué debe verificarse sobre los pasajeros durante el boarding en el check-in avanzado?",o:["Solo verificar la tarjeta de embarque escaneada","La identidad de todos los pasajeros debe comprobarse durante el boarding","Solo los pasajeros sin priority boarding deben verificar su identidad"],c:1,f:"GOM 2.2.1.4 j): la identidad de todos los pasajeros debe verificarse durante el boarding."},
+  {t:"Apertura de puertas",q:"¿Quién puede abrir las puertas de cabina de la aeronave desde el exterior?",o:["Cualquier miembro del personal de handling con acreditación airside","Solo personal de tierra formado y aprobado; desde el interior, solo cabin crew formada","Solo la tripulación de vuelo"],c:1,f:"GOM 4.3.4.3: solo personal de tierra formado y aprobado puede abrir puertas de cabina desde el exterior."},
+  {t:"Airstairs",q:"¿Cuándo pueden los pasajeros y el personal de tierra usar las escaleras de embarque (airstairs)?",o:["Cuando estén correctamente posicionadas junto al avión","Solo cuando la puerta L1 esté abierta, los pasamanos y straps de freno estén extendidos, y la tripulación haya dado la señal de que es seguro","Siempre que el tug de las escaleras esté desconectado y los frenos activados"],c:1,f:"GOM 4.3.4.1 c): las airstairs solo pueden usarse cuando la puerta L1 esté abierta, los pasamanos extendidos y la tripulación haya señalado seguro."},
+  {t:"Sport equipment",q:"¿Qué límite de dimensiones máximas se aplica para artículos deportivos?",o:["Sin límite si el peso no supera los 20 kg","127 cm × 119 cm × 81 cm para la mayoría; con excepciones: pértiga 25×25×540 cm, kayak/surf/paddle 60×40×417 cm","Las mismas dimensiones que para el equipaje estándar: 80×120×120 cm"],c:1,f:"GOM 2.2.1.3: dimensiones máximas 127×119×81 cm, con excepciones para pértiga y kayak/surf/paddle boards."}
+]},
+en:{boh:[
+  {t:"Danger zones",q:"When is it permitted to approach an aircraft with the anti-collision lights on?",o:["Never; no one may approach with anti-collision lights on under any circumstances","Only to place chocks on the nose landing gear (NLG) and connect the GPU; any other approach requires lights off and engines stopped","Whenever the ramp supervisor has given the safe-to-approach signal"],c:1,f:"GOM 4.2.3: the only exception for approaching with anti-collision lights on is placing NLG chocks and connecting the GPU."},
+  {t:"Safe to approach",q:"Who authorises the 'safe to approach' signal after arrival?",o:["The pilot from the cockpit giving a thumbs up","The Responsible Person on the ramp, after confirming anti-collision lights off and engines stopped; signal: both arms/wands at 90° moved forward","The headset operator after verbally confirming with the tower that engines are stopped"],c:1,f:"GOM 4.3.2.4: the Responsible Person verifies lights off and engines stopped before giving the safe to approach signal."},
+  {t:"Walkaround",q:"When must the arrival walkaround be carried out according to the GOM?",o:["Only if the captain requests it or damage is suspected","After every arrival and before every departure; also on first flight of the day, after firebreaks and aircraft changes","Once a day, at the start of the first rotation"],c:1,f:"GOM 4.3.3: walkarounds are mandatory after every arrival and before every departure."},
+  {t:"Walkaround — damage",q:"If unmarked damage to the fuselage is found during the pre-departure walkaround, what action is required?",o:["Log it at the base and inform the next shift","Report it immediately to the captain, Engineering and supervision, and issue a Ground Safety Report","Continue the operation and report it on the next turnaround"],c:1,f:"GOM 4.3.6.3: any anomaly must be reported immediately to the captain, Engineering and supervision."},
+  {t:"FOD",q:"What specific risks can FOD (Foreign Object Debris) generate?",o:["Only damage to tyres and landing gear","Engine ingestion causing damage or failure, damage to tyres/undercarriage/control systems and trip hazards for personnel","Only ingestion risk during engine start"],c:1,f:"GOM 4.2.7: FOD can be ingested by engines, damage structures and create trip hazards."},
+  {t:"FOD — containers",q:"What condition must FOD containers on the ramp meet?",o:["Be painted yellow and on the ERA perimeter","Be enclosed/lidded to prevent the wind dispersing the contents","Be emptied at the start of each shift"],c:1,f:"GOM 4.2.7: FOD containers must be enclosed to prevent wind dispersal."},
+  {t:"Pushback — team",q:"How many team members are required for a pushback with tug and towbar?",o:["Two: tug driver and headset operator","Three: tug driver, headset operator and wingman","Four: tug driver, headset operator, wingman and brake rider"],c:1,f:"GOM 4.3.7.6: tug and towbar pushback requires three people."},
+  {t:"Pushback — wingman",q:"What must the wingman do if they detect a hazard during pushback?",o:["Verbally warn the tug driver and wait for confirmation","Give the STOP signal immediately, maintaining visual contact with the tug driver and headset operator","Stop the pushback only if the hazard directly affects the nose area"],c:1,f:"GOM 4.3.6.4: the wingman must give the STOP signal immediately upon any hazard."},
+  {t:"Pushback — All Clear",q:"When can the headset operator give the final 'All Clear' signal to the captain?",o:["Immediately after the tug has braked in the final position","Only when tug, towbar and wingman are clear, engines have started normally and the captain approves headset disconnection","When the tug driver verbally confirms the parking brake is set"],c:1,f:"GOM 4.3.7.11: only when tug, towbar and wingman are clear and engines have started normally."},
+  {t:"Pushback — phraseology",q:"What standard phrase does the ground crew confirm to the captain to initiate the pushback?",o:["'Ready for pushback, parking brake set'","'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'","'Ground crew in position, cleared to push'"],c:1,f:"GOM 4.3.7.5: ground crew confirms 'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'."},
+  {t:"Pushback — danger areas",q:"During pushback, which areas must all ramp team members stay clear of?",o:["Only the engine intake area and the aircraft path","The area under any part of the aircraft, the aircraft path, the tractor path and the engine danger area","Only the engine exhaust area and the towbar"],c:1,f:"GOM 4.3.7.7: during pushback all personnel must stay clear of the area under the aircraft, its path, the tractor path and the engine danger area."},
+  {t:"Bypass pin",q:"What must the headset operator verify after disconnecting the towbar and removing the bypass pin?",o:["That the tractor parking brake is set","That the steering lock-out lever has returned to its position; if a fault is detected, inform the captain","That the wingman has left the manoeuvring zone"],c:1,f:"GOM 4.3.7.11 d): confirm that the steering lock-out lever has returned to its position."},
+  {t:"Chocks",q:"Under what condition can nose gear chocks be removed without prior notification?",o:["Never; removal of any chock requires captain confirmation","To facilitate tug connection, provided the main landing gear (MLG) chocks remain in place","Only with anti-collision lights off and written authorisation"],c:1,f:"GOM 4.3.6.2: NLG chocks may be removed without prior notification to facilitate tug connection, provided MLG chocks remain."},
+  {t:"Mobile phones on ramp",q:"What restriction applies to mobile phone use during refuelling?",o:["Completely prohibited on both sides of the aircraft","Only permitted on the opposite (left) side of the aircraft during refuelling","May be used freely for work communication with the supervisor"],c:1,f:"GOM 4.2.6: during refuelling, mobile phones are only permitted on the opposite (left) side of the aircraft."},
+  {t:"Cargo holds",q:"What should be done if a cargo hold door does not open during the turnaround?",o:["Apply additional force if the door is unlocked","Do not use excessive force; contact Engineering and notify the captain or supervisor","Ask the captain to open it from the cockpit"],c:1,f:"GOM 4.3.5.1 f): do not use excessive force; contact Engineering and notify the captain or supervisor."},
+  {t:"Cargo holds — approach",q:"When is it prohibited to approach cargo hold doors even when the aircraft is parked?",o:["When passengers are disembarking","When engines have not completed deceleration, anti-collision lights are not off or the safe-to-approach signal has not been given","Only when the captain explicitly indicates so"],c:1,f:"GOM 4.3.5.1 b): do not approach cargo hold doors until engines have decelerated, lights are off and the approach signal has been given."},
+  {t:"Loading order",q:"In what order should B737 holds be loaded and unloaded to prevent tail tip?",o:["Always front to back uniformly","Offload: AFT first, FWD last. Load: FWD first, AFT last","Starting with the most accessible hold"],c:1,f:"GOM 5.7.5: offload → AFT first, FWD last. Load → FWD first, AFT last."},
+  {t:"Hold 3",q:"What is the maximum load that can be placed in AFT Hold 3 before boarding or disembarkation?",o:["No limit if passengers have not yet started","A maximum of 1,000 kg; Hold 4 must remain empty","500 kg, only if the captain authorises it in the LIR"],c:1,f:"GOM 5.7.6: limit of 1,000 kg in AFT Hold 3; Hold 4 must remain empty."},
+  {t:"GSE — brakes",q:"When must the brake check on motorised GSE be carried out before entering the ERA?",o:["At the start of the shift before the first operation","At least once before entering the ERA or within 5 metres of the aircraft, even if no restraint line is marked","Only if an irregularity is detected during the pre-shift visual inspection"],c:1,f:"GOM 4.5.2 a): GSE brake check must be performed at least once before entering the ERA or within 5 metres of the aircraft."},
+  {t:"GSE — marshaller",q:"When is a marshaller required to position or remove GSE next to the aircraft?",o:["Whenever GSE weighs more than 2 tonnes","When the distance to the aircraft is less than 2 metres and the GSE has no sensors/cameras/mirrors and the operator has no direct line of sight","Only when lighting is insufficient or there is fog"],c:1,f:"GOM 4.5.2 d): a marshaller is required when positioning/removing GSE within 2 metres of the aircraft without direct line of sight."},
+  {t:"GSE — danger area",q:"What is expressly prohibited regarding a tractor to which GSE is already connected?",o:["Starting the engine without checking the brakes","Re-entering the danger zone without first alerting the driver","Parking the tractor in the ERA with GSE connected"],c:1,f:"GOM 4.5.1 n): re-entering the danger zone without first alerting the tractor driver is prohibited."},
+  {t:"GPU — hooks",q:"What type of hooks are prohibited for securing the GPU cable to the aircraft?",o:["Plastic hooks","Metal hooks; only plastic hooks are permitted","Velcro or fabric hooks"],c:1,f:"GOM 4.5.6 e): metal hooks are expressly prohibited for securing the GPU cable."},
+  {t:"GPU — disconnection",q:"What check must the ground agent carry out before disconnecting the GPU?",o:["Confirm the APU is operational","Always request captain approval before disconnecting, using hand signals or headset","Confirm no passengers are on board"],c:1,f:"GOM 4.5.6 f): captain approval must always be requested before disconnecting the GPU."},
+  {t:"Aircraft security",q:"What fundamental principle governs aircraft security according to GOM cap. 6.5?",o:["No passenger may approach the aircraft without a validated boarding pass","No authorised person shall leave the aircraft unattended and unprotected; the last person to leave must ensure it is secured","The aircraft must always have at least two doors open for inspection"],c:1,f:"GOM 6.5: no authorised person shall leave a Ryanair aircraft unattended and unprotected."},
+  {t:"Hold check",q:"According to Regulation (EC) 300/2008, when is a hold check NOT required at EU airports?",o:["Never; hold checks are mandatory on all flights","For aircraft arriving from and departing to the critical part of an EU airport; when required: visual check first, manual search if integrity cannot be confirmed","Only on domestic Schengen flights"],c:1,f:"GOM 6.5.2: aircraft arriving and departing from the critical part of an EU airport do not require a hold check."},
+  {t:"Towing — brake rider",q:"Who must occupy the cockpit seat during a towing operation?",o:["A trained handling agent as brake rider, an engineer, or an approved flight crew member","The aircraft captain at all times","No brake rider is needed if the tug driver is responsible for braking"],c:0,f:"GOM 4.4.1: a qualified brake rider must be in the cockpit during towing."},
+  {t:"Towing — 20 feet",q:"What signal must be given if any obstacle is within 20 feet (6 m) of the aircraft during towing?",o:["The tug driver stops and awaits tower instructions","The responsible person activates the alarm with hand signals and/or horn blasts; if not acknowledged, repeat until towing stops","Only increase the separation radius to 10 metres"],c:1,f:"GOM 4.4.5: if any structure is within 20 feet of the aircraft, activate the alarm with signals and/or horn blasts."},
+  {t:"PPE",q:"What obligation does personnel have if defective or inadequate PPE is detected?",o:["May continue using it if the defect is minor","Must report it to management and not use it","May swap it with another agent"],c:1,f:"GOM 6.3.2: defective PPE must be reported to management and must not be used."},
+  {t:"Ramp fire safety",q:"What restriction applies to refuelling vehicles in the aircraft area?",o:["They may only access with the APU off","Access and egress of refuelling vehicles must not be obstructed; aircraft emergency exits must not be blocked at any time","They must always park upwind of the aircraft"],c:1,f:"GOM 6.3.4: refuelling vehicle access/egress must not be obstructed and emergency exits must not be blocked."},
+  {t:"Rapid disembarkation",q:"What is the fundamental difference between a 'rapid disembarkation' and a full emergency evacuation?",o:["There is no difference; both terms are synonymous","A rapid disembarkation is preventive with no immediate danger; in both cases passengers take their hand luggage","A rapid disembarkation is a preventive procedure with no immediate danger in which everyone leaves their belongings on board; the captain may escalate to a full evacuation"],c:2,f:"GOM 6.3.6: rapid disembarkation is preventive, no immediate danger, and everyone leaves their belongings on board."}
+],foh:[
+  {t:"Check-in security",q:"What must the agent do when completing the check-in of a passenger with baggage?",o:["Verify only the travel document and baggage weight","Confirm that the passenger is not carrying dangerous goods, in addition to verifying documentation and weight","Ask the passenger to sign a declaration without verbal confirmation"],c:1,f:"GOM 1.2.1: the agent must confirm that the passenger is not carrying dangerous goods."},
+  {t:"Clean Desk Policy",q:"What does the 'Clean Desk Policy' require of staff in public areas?",o:["Always keep flight documentation visible on the desk","Not leave blank Ryanair documents or sensitive data on public surfaces","Store all paper documentation in locked cabinets during breaks"],c:1,f:"GOM 1.1: blank documents and sensitive data must not be left on public surfaces."},
+  {t:"Cabin baggage",q:"How many cabin bags may a passenger without priority boarding bring on board?",o:["Two: one small and one 10 kg bag","Only one small bag (40×30×20 cm) plus one duty free bag (35×20×20 cm)","A small bag and a handbag of any size"],c:1,f:"GOM 2.1.1: without priority boarding only 1 small bag plus 1 duty free bag is permitted."},
+  {t:"Hold bag — prohibited items",q:"What items must the passenger remove from their hold bag before checking it in?",o:["Only items of declared value over €100","Spare lithium batteries, laptops, tablets and e-cigarettes; also valuables and important documents","Only liquids exceeding 100 ml"],c:1,f:"GOM 2.1.2.2: spare lithium batteries, laptops, tablets and e-cigarettes must be removed from the hold bag."},
+  {t:"NON-PRIORITY boarding",q:"If a NON-PRIORITY passenger at boarding has a second large cabin bag, what is the correct procedure?",o:["Allow boarding and log the incident","Politely inform the passenger that the second bag must be checked as a hold bag; after payment, instruct them to move valuables, documents, medication, electronics and lithium batteries to their small bag","Confiscate the second bag and return it at destination"],c:1,f:"GOM 2.1.2.3: inform of the charge; after payment, move valuables, documents, medication, electronics and batteries to the small bag."},
+  {t:"Weight limit",q:"What is the individual weight limit above which an item is not accepted for transport?",o:["25 kg","32 kg, except for EMAs (Electric Mobility Aids)","40 kg"],c:1,f:"GOM 2.2.1.2: items over 32 kg are not accepted. The exception is EMAs."},
+  {t:"Heavy label",q:"What special label must be attached to bags weighing more than 23 kg?",o:["Red 'Oversize' label","'Heavy' label showing the weight","'Fragile' label"],c:1,f:"GOM 2.2.1.2 b): bags over 23 kg must be labelled 'Heavy'."},
+  {t:"Advance check-in",q:"In advance/overnight check-in, how long must the passenger remain in the terminal after dropping their bag?",o:["They may leave immediately","10 minutes, to answer any security questions during the screening process","30 minutes, to facilitate passenger-baggage reconciliation"],c:1,f:"GOM 2.2.1.4 f): passengers must remain in the terminal for 10 minutes after advance bag drop."},
+  {t:"Advance check-in — problem",q:"If there is a problem with an unavailable passenger's baggage in advance check-in, what happens to their bags?",o:["They are loaded with an incident label to be resolved at destination","They are held separately and not loaded until the problem is resolved; if the passenger does not appear, bags are removed before departure","They are handed to another passenger on the same flight"],c:1,f:"GOM 2.2.1.4 h) and i): bags are held separately until the problem is resolved."},
+  {t:"No-show baggage",q:"What does the GOM require regarding baggage of passengers who do not present for boarding?",o:["They may fly if the check-in agent certifies they were X-rayed","Bags of no-show passengers will be removed before departure","They may fly if weight & balance allows and the captain authorises it"],c:1,f:"GOM 2.2.1.4 k): 'Bags of no-show passengers will be removed before departure'."},
+  {t:"Dangerous goods",q:"What dangerous goods signage is mandatory according to the GOM?",o:["Only at the check-in desk and boarding gate","In ticketing, baggage drop and boarding areas; at SSBD kiosks the process cannot be completed until the passenger acknowledges the restrictions","Only at check-in desks in the local language"],c:1,f:"GOM 1.1 and 1.2.1: DG information must be displayed at ticketing, baggage drop and boarding."},
+  {t:"SSBD — prohibited items",q:"When prohibited items are found at the self-service bag drop (SSBD), what actions are mandatory?",o:["Deny boarding only","Deny boarding, record and report to the airport authority and security service, and submit a Ground Safety Report","Only inform the shift supervisor"],c:1,f:"GOM 1.2.3.2: deny boarding, record the incident, report to the airport authority and submit a Ground Safety Report."},
+  {t:"EMA — safety confirmation",q:"Who confirms that an EMA (Electric Mobility Aid) is safe for transport before loading?",o:["The handling agent who independently inspects the battery","The PRM provider confirms the battery is isolated or removed; both parties verify this before loading","The captain"],c:1,f:"GOM 5.5.3: the PRM provider and the handling agent jointly verify the EMA is safe before loading."},
+  {t:"EMA — maximum number",q:"What is the maximum number of EMAs Ryanair permits on a single flight?",o:["One per flight","Two per flight","No limit if dimensions comply"],c:1,f:"GOM 5.5.3: Ryanair only permits the carriage of two EMAs per flight."},
+  {t:"EMA — hold",q:"Where must the first EMA be loaded in the B737 hold?",o:["In Hold 3 (rear hold)","In Hold 1 (forward hold); if there is one EMA in Hold 1, load buggies and gate bags in Hold 2; additional EMAs in Hold 3","In Hold 2 (centre hold)"],c:1,f:"GOM 5.5.4: first EMA in Hold 1; additional EMAs in Hold 3."},
+  {t:"Passenger marshalling",q:"What does the GOM require regarding passenger movement between the boarding gate and the aircraft on an open ramp?",o:["No special requirements if the aircraft is parked and engines stopped","A specific individual must always be assigned to supervise passengers between the aircraft and the terminal","Cabin crew are solely responsible for controlling passengers on the ramp"],c:1,f:"GOM 6.3.5: a specific individual must always be assigned to marshal passengers."},
+  {t:"Boarding without flight crew",q:"Under what condition may cabin crew board passengers without flight crew present?",o:["Only if the expected delay is less than 15 minutes and the captain authorised it by radio","They may board without flight crew by applying all chapter 1 procedures until at least one flight crew member is on board","Not permitted under any circumstances"],c:1,f:"GOM 6.3.7: cabin crew may board without flight crew in exceptional circumstances, applying all chapter 1 procedures."},
+  {t:"Security report",q:"What minimum information must a security breach report include?",o:["Only the reporter's name and a general description","Location, time, persons involved and incident details; the report must be concise, accurate and factual","Only state whether the threat is internal or external"],c:1,f:"GOM 6.4: security reports must include location, time, individuals involved and incident details."},
+  {t:"Security report — when",q:"When must a security breach or suspicious activity be reported?",o:["Before the end of the work shift","As soon as practicable, to a supervisor or the relevant airport authority","Within 24 hours using the standard security form"],c:1,f:"GOM 6.4: report any security breach or suspicious activity as soon as practicable."},
+  {t:"Security obligation",q:"What obligation do all ground operations employees have regarding aviation security?",o:["Report only incidents directly affecting their duties","Report any security breach immediately to a supervisor or airport authority, and receive initial and recurrent security training","Complete a security checklist at the start and end of each shift"],c:1,f:"GOM 6.4: all ground operations staff must immediately report security breaches and receive initial and recurrent training."},
+  {t:"Aviation threats",q:"From which areas can threats to civil aviation originate according to GOM cap. 6.4.1?",o:["Only from the airside","Both from the landside and airside, including terminal facilities, baggage areas, crew facilities, transport and aircraft on the ground or in flight","Only from outside the airport perimeter"],c:1,f:"GOM 6.4.1: both landside and airside areas can be targets."},
+  {t:"Communication — language",q:"In what language must all communication between ground crew and flight crew take place?",o:["In the official language of the state where the airport operates","Always in English; staff with regular communication with flight crew must be able to communicate effectively in English","In English for international flights and local language for domestic flights"],c:1,f:"GOM 6.4.2: all headset communication between ground crew and flight crew must be in English."},
+  {t:"eLID — failure",q:"What happens if the captain does not confirm acceptance of the eLID due to connectivity issues or device failure?",o:["The flight is delayed until the connection is restored","The paper LID process must be applied","The dispatcher may confirm the eLID on behalf of the captain"],c:1,f:"GOM 5.7.1: if captain confirmation of the eLID is not received, the paper LID process must be applied."},
+  {t:"LID — retention",q:"How long must the ground service provider retain a copy of the paper LID?",o:["7 days","3 months","12 months"],c:1,f:"GOM 5.7.1: the ground service provider retains a copy of the paper LID for 3 months."},
+  {t:"LID — pre-signing",q:"Is it permitted to pre-sign the LIR or LID before loading is complete?",o:["Yes, to save time if the load supervisor guarantees the information is correct","No; pre-signing LIR/LID is not permitted under any circumstances","Only if there is more than 3 hours until departure"],c:1,f:"GOM 5.6 and 5.7.1: 'Documents must never be pre-signed'. Pre-signing LIR/LID is not permitted."},
+  {t:"Manual check-in",q:"How frequently must each airport base carry out the manual check-in exercise?",o:["Once a month","Once a week for bases and once a month for airports; if L-DCS backup is available at a base, monthly is acceptable","Once per quarter or when the main system fails"],c:1,f:"GOM 1.2.3.2: 1 flight per week for bases and 1 per month for airports."},
+  {t:"Identity at boarding",q:"What must be verified about passengers during boarding in advance check-in operations?",o:["Only scan the boarding pass","The identity of all passengers must be verified during boarding","Only passengers without priority boarding need to verify their identity"],c:1,f:"GOM 2.2.1.4 j): the identity of all passengers must be verified during boarding without exception."},
+  {t:"Opening cabin doors",q:"Who may open aircraft cabin doors from the outside?",o:["Any handling staff member with airside accreditation","Only trained and approved ground staff; from the inside, only trained cabin crew","Only flight crew have authorisation to operate doors"],c:1,f:"GOM 4.3.4.3: only trained and approved ground staff may open cabin doors from the outside."},
+  {t:"Airstairs",q:"When may passengers and ground staff use the boarding stairs (airstairs)?",o:["When correctly positioned alongside the aircraft","Only when door L1 is open, handrails and brake straps are extended, and crew has given the safe signal","Whenever the stair tug is disconnected and brakes are applied"],c:1,f:"GOM 4.3.4.1 c): airstairs may only be used when door L1 is open, handrails extended and crew has signalled safe."},
+  {t:"Sport equipment",q:"What maximum dimension limit applies to sports equipment on Ryanair?",o:["No dimension limit if weight does not exceed 20 kg","127 cm × 119 cm × 81 cm for most items; exceptions: pole vault 25×25×540 cm, kayak/surf/paddle 60×40×417 cm","Same dimensions as standard baggage: 80×120×120 cm"],c:1,f:"GOM 2.2.1.3: maximum dimensions 127×119×81 cm, with exceptions for pole vault and kayak/surf/paddle boards."}
+]},
+pt:{boh:[
+  {t:"Zonas de perigo",q:"Quando é permitido aproximar-se de uma aeronave com as luzes anti-colisão acesas?",o:["Nunca; com as luzes anti-colisão acesas ninguém se pode aproximar em nenhuma circunstância","Apenas para colocar os calços no trem de nariz (NLG) e ligar a GPU; qualquer outra aproximação exige luzes apagadas e motores parados","Sempre que o supervisor de rampa tenha dado o sinal de aproximação segura"],c:1,f:"GOM 4.2.3: a única excepção é colocar os calços do NLG e ligar a GPU."},
+  {t:"Sinal safe to approach",q:"Quem autoriza o sinal 'safe to approach' após a chegada?",o:["O piloto da cabine levantando o polegar","O Responsible Person na rampa, após confirmar luzes anti-colisão apagadas e motores parados; sinal: ambos os braços/wands a 90° avançados para a frente","O agente de headset após confirmar com a torre que os motores estão parados"],c:1,f:"GOM 4.3.2.4: o Responsible Person verifica luzes apagadas e motores parados antes de emitir o sinal."},
+  {t:"Walkaround",q:"Quando deve ser realizado o walkaround de chegada segundo o GOM?",o:["Apenas se o comandante o solicitar ou houver suspeita de danos","Após todas as chegadas e antes de todas as partidas; também no primeiro voo do dia, após firebreaks e mudanças de aeronave","Uma vez por dia, no início da primeira rotação"],c:1,f:"GOM 4.3.3: os walkarounds são obrigatórios após todas as chegadas e antes de todas as partidas."},
+  {t:"Walkaround — danos",q:"Se durante o walkaround pré-partida se detectar dano não marcado na fuselagem, que acção é necessária?",o:["Registá-lo no log da base e notificar o turno seguinte","Comunicar imediatamente ao comandante, Engineering e supervisão, e emitir um Ground Safety Report","Continuar a operação e notificar no turnaround seguinte"],c:1,f:"GOM 4.3.6.3: qualquer anomalia deve ser reportada imediatamente ao comandante, Engineering e supervisão."},
+  {t:"FOD",q:"Que riscos específicos pode gerar o FOD (Foreign Object Debris)?",o:["Apenas danos nos pneus e no trem de aterragem","Ingestão nos motores, danos em pneus/trem/sistemas de controlo e risco de tropeçar para o pessoal","Apenas risco de ingestão durante o arranque dos motores"],c:1,f:"GOM 4.2.7: o FOD pode ser ingerido pelos motores, danificar estruturas e representar risco de queda."},
+  {t:"FOD — contentores",q:"Que condição devem cumprir os contentores de FOD na rampa?",o:["Estar pintados de amarelo e no perímetro do ERA","Ser fechados/com tampa para evitar que o vento disperse o conteúdo","Ser esvaziados no início de cada turno"],c:1,f:"GOM 4.2.7: os contentores de FOD devem ser fechados para evitar que o vento disperse os detritos."},
+  {t:"Pushback — equipa",q:"Quantos membros de equipa são obrigatórios num pushback com tug e towbar?",o:["Dois: tug driver e headset operator","Três: tug driver, headset operator e wingman","Quatro: tug driver, headset operator, wingman e brake rider na cabine"],c:1,f:"GOM 4.3.7.6: o pushback com tug e towbar requer três pessoas."},
+  {t:"Pushback — wingman",q:"O que deve fazer o wingman se detectar um perigo durante o pushback?",o:["Avisar verbalmente o tug driver e aguardar confirmação","Dar o sinal STOP de imediato, mantendo contacto visual com o tug driver e o headset operator","Parar o pushback apenas se o perigo afectar a área do nariz"],c:1,f:"GOM 4.3.6.4: o wingman deve dar o sinal STOP imediatamente perante qualquer perigo."},
+  {t:"Pushback — All Clear",q:"Quando pode o headset operator dar o sinal final 'All Clear' ao comandante?",o:["Imediatamente após o tug ter travado na posição final","Apenas quando o tug, towbar e wingman estão livres, os motores arrancaram normalmente e o comandante aprova a desconexão","Quando o tug driver confirma verbalmente que o travão de estacionamento está acionado"],c:1,f:"GOM 4.3.7.11: apenas quando tug, towbar e wingman estão livres e os motores arrancaram normalmente."},
+  {t:"Pushback — fraseologia",q:"Que frase confirma o ground crew ao comandante para iniciar o pushback?",o:["'Ready for pushback, parking brake set'","'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'","'Ground crew in position, cleared to push'"],c:1,f:"GOM 4.3.7.5: o ground crew confirma 'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'."},
+  {t:"Pushback — zonas de perigo",q:"Durante o pushback, que áreas devem ser evitadas por todos os membros da equipa de rampa?",o:["Apenas a área de aspiração dos motores e a trajectória da aeronave","A área sob qualquer parte da aeronave, a trajectória da aeronave, a do tractor e a área de perigo do motor","Apenas a área de escape dos motores e o towbar"],c:1,f:"GOM 4.3.7.7: durante o pushback todo o pessoal deve manter-se afastado da área sob a aeronave, das suas trajectórias e da área de perigo do motor."},
+  {t:"Bypass pin",q:"O que deve verificar o headset operator após desligar o towbar e retirar o bypass pin?",o:["Que o travão de estacionamento do tractor está acionado","Que o steering lock-out lever regressou à sua posição; se detectar falha, deve informar o comandante","Que o wingman abandonou a zona de manobra"],c:1,f:"GOM 4.3.7.11 d): deve confirmar-se que o steering lock-out lever regressou à sua posição."},
+  {t:"Calços",q:"Em que condição podem ser retirados os calços do trem de nariz sem notificação prévia?",o:["Nunca; a remoção de qualquer calço requer confirmação do comandante","Para facilitar a ligação do tug, desde que os calços do trem principal (MLG) permaneçam colocados","Apenas com as luzes anti-colisão apagadas e autorização escrita"],c:1,f:"GOM 4.3.6.2: os calços do NLG podem ser retirados sem notificação prévia para facilitar a ligação do tug, desde que os do MLG permaneçam."},
+  {t:"Telemóveis na rampa",q:"Que restrição se aplica ao uso do telemóvel durante o abastecimento?",o:["Completamente proibido em ambos os lados da aeronave durante o abastecimento","Apenas permitido no lado oposto (esquerdo) da aeronave durante o abastecimento","Pode ser usado livremente para comunicação de trabalho com o supervisor"],c:1,f:"GOM 4.2.6: durante o abastecimento o telemóvel só é permitido no lado oposto (esquerdo) da aeronave."},
+  {t:"Porões",q:"O que deve ser feito se uma porta de porão não abrir durante o turnaround?",o:["Aplicar força adicional se a porta estiver desbloqueada","Não usar força excessiva; contactar Engineering e notificar o comandante ou supervisor","Pedir ao comandante que a abra da cabine"],c:1,f:"GOM 4.3.5.1 f): não usar força excessiva; contactar Engineering e notificar o comandante ou supervisor."},
+  {t:"Porões — aproximação",q:"Quando é proibido aproximar-se das portas de porão mesmo com a aeronave estacionada?",o:["Quando há passageiros a desembarcar","Quando os motores não completaram a desaceleração, as luzes anti-colisão não estão apagadas ou o sinal de aproximação segura não foi dado","Apenas quando o comandante o indica explicitamente"],c:1,f:"GOM 4.3.5.1 b): não se aproximar das portas de porão até os motores desacelerarem, as luzes estarem apagadas e o sinal de aproximação ter sido dado."},
+  {t:"Ordem de carga",q:"Em que ordem devem ser carregados e descarregados os porões do B737 para evitar o tombamento traseiro?",o:["Carregar e descarregar sempre da proa para a popa uniformemente","Descarga: AFT primeiro, FWD no final. Carga: FWD primeiro, AFT no final","Começando sempre pelo porão mais acessível"],c:1,f:"GOM 5.7.5: descarga → AFT primeiro, FWD no final. Carga → FWD primeiro, AFT no final."},
+  {t:"Hold 3",q:"Qual é a carga máxima que pode ser colocada no porão AFT Hold 3 antes do embarque ou desembarque?",o:["Sem limite se os passageiros ainda não começaram","Máximo de 1.000 kg de carga ou peças; o Hold 4 deve permanecer vazio","500 kg, e apenas se o comandante o autorizar no LIR"],c:1,f:"GOM 5.7.6: limite de 1.000 kg no AFT Hold 3; o Hold 4 deve permanecer vazio."},
+  {t:"GSE — travões",q:"Quando deve ser efectuada a verificação de travões do GSE motorizado antes de entrar no ERA?",o:["No início do turno, antes da primeira operação do dia","Pelo menos uma vez antes de entrar no ERA ou a 5 metros da aeronave, mesmo que não haja linha de contenção marcada","Apenas se for detectada irregularidade durante a inspecção visual pré-turno"],c:1,f:"GOM 4.5.2 a): a verificação de travões do GSE deve ser realizada pelo menos uma vez antes de entrar no ERA ou a 5 metros da aeronave."},
+  {t:"GSE — marshaller",q:"Quando é necessário um marshaller para posicionar ou retirar GSE junto à aeronave?",o:["Sempre que o GSE pese mais de 2 toneladas","Quando a distância à aeronave é inferior a 2 metros e o GSE não tem sensores/câmaras/espelhos nem o operador tem linha de visão directa","Apenas quando a iluminação é insuficiente ou há nevoeiro"],c:1,f:"GOM 4.5.2 d): é necessário marshaller para posicionar/retirar GSE a menos de 2 metros da aeronave sem linha de visão directa."},
+  {t:"GSE — zona de perigo",q:"O que está expressamente proibido relativamente a um tractor ao qual já está ligado GSE?",o:["Arrancar o motor sem verificar os travões","Reentrar na zona de perigo após o GSE estar ligado ao tractor sem alertar primeiro o condutor","Estacionar o tractor no ERA com o GSE ligado"],c:1,f:"GOM 4.5.1 n): é proibido reentrar na zona de perigo sem alertar primeiro o condutor."},
+  {t:"GPU — ganchos",q:"Que tipo de ganchos estão proibidos para fixar o cabo da GPU à aeronave?",o:["Os ganchos de plástico","Os ganchos metálicos; apenas os de plástico são permitidos","Os ganchos de velcro ou tecido"],c:1,f:"GOM 4.5.6 e): os ganchos metálicos estão expressamente proibidos para fixar o cabo da GPU."},
+  {t:"GPU — desconexão",q:"Que verificação deve o agente de terra efectuar antes de desligar a GPU da aeronave?",o:["Confirmar que o APU está operacional","Solicitar sempre a aprovação do comandante antes de desligar, usando sinais manuais ou headset","Confirmar que não há passageiros a bordo"],c:1,f:"GOM 4.5.6 f): deve sempre ser solicitada a aprovação do comandante antes de desligar a GPU."},
+  {t:"Segurança da aeronave",q:"Que princípio fundamental rege a segurança da aeronave segundo o cap. 6.5 do GOM?",o:["Nenhum passageiro pode aproximar-se da aeronave sem cartão de embarque validado","Nenhuma pessoa autorizada pode deixar a aeronave sem supervisão e desprotegida; a última pessoa autorizada a sair deve garantir que fica protegida","A aeronave deve ter sempre pelo menos duas portas abertas"],c:1,f:"GOM 6.5: nenhuma pessoa autorizada pode deixar uma aeronave da Ryanair sem supervisão e desprotegida."},
+  {t:"Hold check",q:"Segundo o Regulamento (CE) 300/2008, quando NÃO é necessário um hold check em aeroportos da UE?",o:["Nunca; o hold check é obrigatório em todos os voos","Em aeronaves que chegam e partem da parte crítica de um aeroporto da UE; quando necessário: inspecção visual primeiro e busca manual se a integridade não for confirmada","Apenas em voos domésticos no espaço Schengen"],c:1,f:"GOM 6.5.2: as aeronaves que chegam e partem da parte crítica de um aeroporto da UE não precisam de hold check."},
+  {t:"Reboque — brake rider",q:"Quem deve ocupar o assento da cabine durante uma operação de reboque?",o:["Um agente de handling formado como brake rider, engenheiro ou tripulação de voo aprovada","O comandante da aeronave em todo o momento","Não é necessário nenhum brake rider se o tug driver for responsável pela travagem"],c:0,f:"GOM 4.4.1: deve haver um brake rider qualificado na cabine durante o reboque."},
+  {t:"Reboque — 20 pés",q:"Que sinal deve ser dado se algum obstáculo estiver a menos de 20 pés (6 m) da aeronave durante o reboque?",o:["O tug driver para a operação e aguarda instruções da torre","A pessoa responsável activa o alarme com sinais manuais e/ou buzinadas; se não for reconhecido, devem ser repetidos até o reboque parar","Apenas é necessário aumentar o raio de separação para 10 metros"],c:1,f:"GOM 4.4.5: se alguma estrutura estiver a menos de 20 pés da aeronave, activar o alarme com sinais e/ou buzinadas."},
+  {t:"EPI",q:"Que obrigação tem o pessoal se detectar EPI defeituoso ou inadequado?",o:["Pode continuar a usá-lo se o defeito for menor","Deve reportá-lo à direcção e não o usar","Pode trocá-lo com outro agente"],c:1,f:"GOM 6.3.2: o EPI defeituoso deve ser reportado à direcção e não deve ser utilizado."},
+  {t:"Segurança contra incêndio na rampa",q:"Que restrição se aplica aos veículos de abastecimento na área da aeronave?",o:["Só podem aceder com o APU desligado","O acesso e saída dos veículos de abastecimento não deve ser obstruído; as saídas de emergência da aeronave não podem ser bloqueadas em nenhum momento","Devem estacionar sempre a barlavento da aeronave"],c:1,f:"GOM 6.3.4: o acesso/saída dos veículos de abastecimento não deve ser obstruído e as saídas de emergência não devem ser bloqueadas."},
+  {t:"Desembarque rápido",q:"Qual é a diferença fundamental entre um 'rapid disembarkation' e uma evacuação de emergência completa?",o:["Não há diferença; os dois termos são sinónimos","O rapid disembarkation é preventivo sem perigo imediato; em ambos os casos os passageiros levam a bagagem de mão","O rapid disembarkation é um procedimento preventivo sem perigo imediato em que todos deixam os seus pertences a bordo; o comandante pode escalar para evacuação completa"],c:2,f:"GOM 6.3.6: o rapid disembarkation é preventivo, sem perigo imediato, e todos deixam os seus pertences a bordo."}
+],foh:[
+  {t:"Segurança check-in",q:"O que deve fazer o agente quando conclui o check-in de um passageiro com bagagem?",o:["Verificar apenas o documento de viagem e o peso da bagagem","Confirmar que o passageiro não transporta mercadorias perigosas, além de verificar documentação e peso","Pedir ao passageiro que assine uma declaração sem confirmação verbal"],c:1,f:"GOM 1.2.1: o agente deve confirmar que o passageiro não transporta mercadorias perigosas."},
+  {t:"Clean Desk Policy",q:"O que exige a 'Clean Desk Policy' do pessoal em áreas públicas?",o:["Ter sempre visível a documentação do voo no balcão","Não deixar documentos em branco da Ryanair nem dados sensíveis em superfícies públicas","Guardar toda a documentação em papel em armários fechados durante as pausas"],c:1,f:"GOM 1.1: não podem ser deixados documentos em branco nem dados sensíveis em superfícies públicas."},
+  {t:"Bagagem de cabine",q:"Quantas malas de cabine pode um passageiro sem priority boarding levar a bordo?",o:["Duas: uma pequena e uma de 10 kg","Apenas uma mala pequena (40×30×20 cm) mais uma mala de duty free (35×20×20 cm)","Uma mala pequena e um saco de mão de qualquer tamanho"],c:1,f:"GOM 2.1.1: sem priority boarding apenas é permitida 1 mala pequena mais 1 mala de duty free."},
+  {t:"Hold bag — artigos proibidos",q:"Que artigos deve o passageiro retirar da sua bagagem de porão antes de a facturar?",o:["Apenas artigos de valor declarado superiores a 100 euros","Baterias de lítio de reserva, portáteis, tablets e cigarros electrónicos; também objectos de valor e documentos importantes","Apenas os líquidos que excedam os 100 ml"],c:1,f:"GOM 2.1.2.2: retirar da hold bag baterias de lítio de reserva, portáteis, tablets e e-cigarettes."},
+  {t:"NON-PRIORITY boarding",q:"Se no embarque um passageiro NON-PRIORITY tiver uma segunda mala grande de cabine, qual é o procedimento correcto?",o:["Permitir o embarque e registar o incidente","Informar cortesmente que a segunda mala deve ser facturada com a taxa aplicável; após o pagamento, indicar que transfira objectos de valor, documentos, medicamentos, electrónicos e baterias de lítio para a mala pequena","Confiscar a segunda mala e devolvê-la no destino"],c:1,f:"GOM 2.1.2.3: informar da taxa; após o pagamento, transferir objectos de valor, documentos, medicamentos e baterias para a mala pequena."},
+  {t:"Limite de peso",q:"Qual é o limite de peso individual acima do qual um artigo não é aceite para transporte?",o:["25 kg","32 kg, excepto para EMAs (Electric Mobility Aids)","40 kg"],c:1,f:"GOM 2.2.1.2: artigos individuais com mais de 32 kg não são aceites. A excepção são os EMAs."},
+  {t:"Etiqueta Heavy",q:"Que etiqueta especial deve ser colocada nas bagagens que excedam os 23 kg?",o:["Etiqueta vermelha 'Oversize'","Etiqueta 'Heavy' com o peso indicado","Etiqueta 'Fragile'"],c:1,f:"GOM 2.2.1.2 b): as bagagens com mais de 23 kg devem ser etiquetadas como 'Heavy'."},
+  {t:"Check-in antecipado",q:"No check-in antecipado/nocturno, quanto tempo mínimo deve o passageiro permanecer no terminal após depositar a bagagem?",o:["Pode sair imediatamente","10 minutos, para poder responder a qualquer questão de segurança durante a triagem","30 minutos, para facilitar a reconciliação passageiro-bagagem"],c:1,f:"GOM 2.2.1.4 f): os passageiros devem permanecer 10 minutos no terminal após o advance bag drop."},
+  {t:"Check-in antecipado — problema",q:"Se no check-in antecipado houver problemas com a bagagem de um passageiro indisponível, o que acontece às suas malas?",o:["São carregadas com etiqueta de incidente para resolver no destino","São retidas separadamente e não são carregadas até o problema ser resolvido; se o passageiro não aparecer, são retiradas antes da partida","São entregues a outro passageiro do mesmo voo"],c:1,f:"GOM 2.2.1.4 h) e i): as malas são retidas separadamente até o problema ser resolvido."},
+  {t:"Bagagem de no-show",q:"O que obriga o GOM relativamente às bagagens de passageiros que não se apresentam ao embarque?",o:["Podem voar se o agente certificar que foram inspeccionadas por raios X","As bagagens dos passageiros no-show são retiradas antes da partida","Podem voar se o weight & balance o permitir e o comandante der autorização"],c:1,f:"GOM 2.2.1.4 k): 'Bags of no-show passengers will be removed before departure'."},
+  {t:"Mercadorias perigosas",q:"Que sinalização sobre mercadorias perigosas é obrigatória segundo o GOM?",o:["Apenas no balcão de check-in e na porta de embarque","Nas áreas de ticketing, baggage drop e boarding; nos quiosques SSBD o processo não pode ser concluído até o passageiro reconhecer as restrições","Apenas nos balcões de check-in, no idioma local"],c:1,f:"GOM 1.1 e 1.2.1: a informação DG deve ser exibida em ticketing, baggage drop e boarding."},
+  {t:"SSBD — artigos proibidos",q:"Ao descobrir artigos proibidos no quiosque de auto bag drop (SSBD), que acções são obrigatórias?",o:["Apenas recusar o embarque","Recusar o embarque, registar e reportar à autoridade aeroportuária e ao serviço de segurança do estado onde ocorre, e apresentar um Ground Safety Report","Apenas informar o supervisor de turno"],c:1,f:"GOM 1.2.3.2: recusar o embarque, registar o incidente, reportar à autoridade aeroportuária e apresentar um Ground Safety Report."},
+  {t:"EMA — confirmação de segurança",q:"Quem confirma que um EMA (Electric Mobility Aid) é seguro para transporte antes do carregamento?",o:["O agente de handling que inspecciona a bateria de forma independente","O fornecedor de PRM confirma que a bateria está isolada ou retirada; ambas as partes verificam isto antes do carregamento","O comandante"],c:1,f:"GOM 5.5.3: o fornecedor de PRM e o agente de handling verificam juntos que o EMA é seguro."},
+  {t:"EMA — número máximo",q:"Qual é o número máximo de EMAs que a Ryanair permite transportar num voo?",o:["Um por voo","Dois por voo","Sem limite se as dimensões estiverem em conformidade"],c:1,f:"GOM 5.5.3: a Ryanair apenas permite o transporte de dois EMAs por voo."},
+  {t:"EMA — porão",q:"Onde deve ser carregado o primeiro EMA no porão do B737?",o:["No Hold 3 (porão traseiro)","No Hold 1 (porão dianteiro); se houver um EMA no Hold 1, carregar buggies e gate bags no Hold 2; EMAs adicionais no Hold 3","No Hold 2 (porão central)"],c:1,f:"GOM 5.5.4: o primeiro EMA é carregado no Hold 1; EMAs adicionais no Hold 3."},
+  {t:"Marshalling de passageiros",q:"O que exige o GOM sobre o movimento de passageiros entre a porta de embarque e a aeronave na rampa aberta?",o:["Não há requisitos especiais se os motores estiverem parados","Deve ser sempre atribuído um indivíduo específico para supervisionar os passageiros entre a aeronave e o terminal","O pessoal de cabine é o único responsável pelo controlo dos passageiros na rampa"],c:1,f:"GOM 6.3.5: um indivíduo específico deve ser sempre atribuído para fazer o marshalling de passageiros."},
+  {t:"Embarque sem tripulação de voo",q:"Em que condição pode a cabin crew embarcar passageiros sem a tripulação de voo presente?",o:["Apenas se o atraso previsto for inferior a 15 minutos e o comandante tiver autorizado por rádio","Podem embarcar sem tripulação de voo aplicando todos os procedimentos do capítulo 1 até que pelo menos um membro da tripulação de voo esteja a bordo","Não é permitido em nenhuma circunstância"],c:1,f:"GOM 6.3.7: a cabin crew pode embarcar sem tripulação de voo em circunstâncias excepcionais, aplicando todos os procedimentos do cap. 1."},
+  {t:"Relatório de segurança",q:"Que informação mínima deve incluir um relatório de violação de segurança?",o:["Apenas o nome do reportante e uma descrição geral","Local, hora, pessoas envolvidas e detalhes do incidente; o relatório deve ser conciso, preciso e factual","Apenas indicar se a ameaça é interna ou externa"],c:1,f:"GOM 6.4: os relatórios devem incluir local, hora, indivíduos envolvidos e detalhes do incidente."},
+  {t:"Relatório de segurança — quando",q:"Quando deve ser reportada uma violação de segurança ou actividade suspeita?",o:["Antes do final do turno de trabalho em que ocorreu","O mais rapidamente possível ('as soon as practicable'), comunicando-o a um supervisor ou à autoridade aeroportuária","Nas 24 horas seguintes"],c:1,f:"GOM 6.4: reportar de imediato qualquer violação de segurança ou actividade suspeita."},
+  {t:"Obrigação de segurança",q:"Que obrigação têm todos os funcionários de ground operations relativamente à segurança aérea?",o:["Reportar apenas incidentes que afectem directamente as suas funções","Reportar imediatamente qualquer violação de segurança ou actividade suspeita e receber formação inicial e recorrente","Preencher uma checklist de segurança no início e no final de cada turno"],c:1,f:"GOM 6.4: todo o pessoal deve reportar de imediato qualquer violação de segurança e receber formação inicial e recorrente."},
+  {t:"Ameaças à aviação",q:"De que áreas podem originar-se ameaças à aviação civil segundo o cap. 6.4.1 do GOM?",o:["Apenas do lado ar (airside)","Tanto do lado terra (landside) como do lado ar (airside), incluindo instalações terminais, áreas de bagagem, instalações de tripulação, transporte e aeronaves em terra ou em voo","Apenas do exterior do perímetro aeroportuário"],c:1,f:"GOM 6.4.1: tanto as áreas landside como airside podem ser alvo."},
+  {t:"Comunicação — idioma",q:"Em que idioma deve ser realizada toda a comunicação entre ground crew e tripulação de voo?",o:["No idioma oficial do estado onde opera o aeroporto","Sempre em inglês; o pessoal com comunicação regular com a tripulação de voo deve poder comunicar eficazmente em inglês","Em inglês para voos internacionais e no idioma local para voos domésticos"],c:1,f:"GOM 6.4.2: toda a comunicação headset entre ground crew e tripulação de voo deve ser em inglês."},
+  {t:"eLID — falha",q:"O que acontece se o comandante não confirmar a aceitação do eLID por problemas de ligação ou falha do dispositivo?",o:["O voo é atrasado até a ligação ser restabelecida","Deve ser aplicado o processo de LID em papel","O dispatcher pode confirmar o eLID em nome do comandante"],c:1,f:"GOM 5.7.1: se a confirmação do comandante do eLID não for recebida, deve ser aplicado o processo de LID em papel."},
+  {t:"LID — conservação",q:"Quanto tempo deve o ground service provider conservar uma cópia do LID em papel?",o:["7 dias","3 meses","12 meses"],c:1,f:"GOM 5.7.1: o ground service provider conserva uma cópia do LID em papel durante 3 meses."},
+  {t:"LID — pré-assinatura",q:"É permitido pré-assinar o LIR ou o LID antes de o carregamento estar completo?",o:["Sim, se o supervisor de carga garantir que a informação é correcta","Não; a pré-assinatura do LIR/LID não é permitida em nenhuma circunstância","Apenas se houver mais de 3 horas de margem até à partida"],c:1,f:"GOM 5.6 e 5.7.1: 'Documents must never be pre-signed'. A pré-assinatura não é permitida."},
+  {t:"Check-in manual",q:"Com que frequência mínima deve cada aeroporto base realizar o exercício de check-in manual?",o:["Uma vez por mês","Uma vez por semana para bases e uma vez por mês para aeroportos; se houver L-DCS disponível numa base, uma vez por mês é aceitável","Uma vez por trimestre ou quando o sistema principal falhar"],c:1,f:"GOM 1.2.3.2: 1 voo por semana para bases e 1 por mês para aeroportos."},
+  {t:"Identidade no embarque",q:"O que deve ser verificado sobre os passageiros durante o embarque no check-in antecipado?",o:["Apenas verificar o cartão de embarque digitalizado","A identidade de todos os passageiros deve ser verificada durante o embarque","Apenas os passageiros sem priority boarding devem verificar a sua identidade"],c:1,f:"GOM 2.2.1.4 j): a identidade de todos os passageiros deve ser verificada durante o embarque, sem excepções."},
+  {t:"Abertura de portas de cabine",q:"Quem pode abrir as portas de cabine da aeronave pelo exterior?",o:["Qualquer membro do pessoal de handling com acreditação airside","Apenas pessoal de terra formado e aprovado; pelo interior, apenas cabin crew formada","Apenas a tripulação de voo"],c:1,f:"GOM 4.3.4.3: apenas pessoal de terra formado e aprovado pode abrir portas de cabine pelo exterior."},
+  {t:"Airstairs",q:"Quando podem os passageiros e o pessoal de terra usar as escadas de embarque (airstairs)?",o:["Quando estiverem correctamente posicionadas junto à aeronave","Apenas quando a porta L1 estiver aberta, os corrimãos e brake straps estiverem estendidos e a tripulação tiver dado o sinal de segurança","Sempre que o tug das escadas estiver desligado e os travões activados"],c:1,f:"GOM 4.3.4.1 c): as airstairs só podem ser usadas quando a porta L1 estiver aberta, os corrimãos extendidos e a tripulação tiver sinalizado segurança."},
+  {t:"Equipamento desportivo",q:"Que limite de dimensões máximas se aplica aos artigos desportivos?",o:["Sem limite de dimensões se o peso não exceder 20 kg","127 cm × 119 cm × 81 cm para a maioria; excepções: vara de salto 25×25×540 cm, kayak/surf/paddle 60×40×417 cm","As mesmas dimensões que para bagagem padrão: 80×120×120 cm"],c:1,f:"GOM 2.2.1.3: dimensões máximas 127×119×81 cm, com excepções para vara de salto e kayak/surf/paddle boards."}
+]}};
+
+let lang = 'es';
+let currentMode = null;
+let quiz = { questions: [], idx: 0, ok: 0, bad: 0, results: [] };
+
+const T = {
+  es: {
+    qrTitle:'Escanea<br><span>& Practica</span>',qrSub:'Accede al cuestionario de seguridad operacional desde tu móvil',qrHint:'Apunta la cámara del móvil al código QR',qrEnter:'Entrar directamente →',
+    selTitle:'Elige tu módulo',selSub:'Se seleccionarán 3 preguntas aleatorias del módulo elegido',
+    bohTitle:'Rampa',bohDesc:'Pushback · Carga · GSE · Walkaround · Zonas de peligro',
+    fohTitle:'Pasaje',fohDesc:'Check-in · Embarque · Equipaje · Pasajeros · LID',
+    progOf:(a,b)=>`Pregunta ${a} de ${b}`,exit:'Salir',next:'Siguiente',results:'Ver resultados',
+    correct:'✓ Correcto.',wrong:'✗ Incorrecto.',tagBoh:'RAMPA',tagFoh:'PASAJE',
+    resLabel:(ok,t)=>`${ok} correctas de ${t} preguntas`,
+    statOk:'Correctas',statBad:'Incorrectas',statTotal:'Total',
+    btnRepeat:'Repetir (nuevas preguntas)',btnChange:'Cambiar módulo',
+    reviewTitle:(n)=>`Preguntas incorrectas (${n})`,
+    confirmAbort:'¿Salir del cuestionario? Se perderá el progreso actual.',
+    msg100:{emoji:'🏆',grade:'¡Excelente! — 3 de 3',cls:'grade-pass',color:'var(--green)',msg:'¡Perfecto! Demuestras un dominio sólido de los procedimientos de seguridad operacional. Tu conocimiento protege a tu equipo, a los pasajeros y a la aeronave. Sigue así.'},
+    msg67:{emoji:'✅',grade:'Bien — 2 de 3',cls:'grade-ok',color:'var(--amber)',msg:'Buen resultado, pero la seguridad operacional no admite margen de error. Repasa las preguntas falladas y consulta el capítulo correspondiente del GOM antes de tu próximo turno.'},
+    msg0:{emoji:'⚠️',grade:'Necesita repaso',cls:'grade-fail',color:'var(--red)',msg:'Los procedimientos de seguridad son la primera línea de defensa ante incidentes en rampa y en terminal. Es imprescindible repasar el GOM y completar de nuevo este cuestionario antes de operar.'}
+  },
+  en: {
+    qrTitle:'Scan<br><span>& Practice</span>',qrSub:'Access the operational safety quiz from your mobile',qrHint:'Point your mobile camera at the QR code',qrEnter:'Enter directly →',
+    selTitle:'Choose your module',selSub:'3 random questions will be selected from the chosen module',
+    bohTitle:'Ramp',bohDesc:'Pushback · Loading · GSE · Walkaround · Danger zones',
+    fohTitle:'Passenger',fohDesc:'Check-in · Boarding · Baggage · Passengers · LID',
+    progOf:(a,b)=>`Question ${a} of ${b}`,exit:'Exit',next:'Next',results:'See results',
+    correct:'✓ Correct.',wrong:'✗ Incorrect.',tagBoh:'RAMP',tagFoh:'PASSENGER',
+    resLabel:(ok,t)=>`${ok} correct out of ${t} questions`,
+    statOk:'Correct',statBad:'Incorrect',statTotal:'Total',
+    btnRepeat:'Repeat (new questions)',btnChange:'Change module',
+    reviewTitle:(n)=>`Incorrect questions (${n})`,
+    confirmAbort:'Exit the quiz? Current progress will be lost.',
+    msg100:{emoji:'🏆',grade:'Excellent! — 3 out of 3',cls:'grade-pass',color:'var(--green)',msg:'Perfect! You demonstrate a solid command of operational safety procedures. Your knowledge protects your team, passengers and the aircraft. Keep it up.'},
+    msg67:{emoji:'✅',grade:'Good — 2 out of 3',cls:'grade-ok',color:'var(--amber)',msg:'Good result, but operational safety allows no margin for error. Review the incorrect questions and consult the relevant GOM chapter before your next shift.'},
+    msg0:{emoji:'⚠️',grade:'Needs review',cls:'grade-fail',color:'var(--red)',msg:'Safety procedures are the first line of defence against ramp and terminal incidents. You must review the GOM and complete this quiz again before operating.'}
+  },
+  pt: {
+    qrTitle:'Leia o QR<br><span>& Pratique</span>',qrSub:'Aceda ao questionário de segurança operacional a partir do seu telemóvel',qrHint:'Aponte a câmara do telemóvel para o código QR',qrEnter:'Entrar diretamente →',
+    selTitle:'Escolha o seu módulo',selSub:'Serão selecionadas 3 perguntas aleatórias do módulo escolhido',
+    bohTitle:'Rampa',bohDesc:'Pushback · Carga · GSE · Walkaround · Zonas de perigo',
+    fohTitle:'Passageiros',fohDesc:'Check-in · Embarque · Bagagem · Passageiros · LID',
+    progOf:(a,b)=>`Pergunta ${a} de ${b}`,exit:'Sair',next:'Seguinte',results:'Ver resultados',
+    correct:'✓ Correto.',wrong:'✗ Incorreto.',tagBoh:'RAMPA',tagFoh:'PASSAGEIROS',
+    resLabel:(ok,t)=>`${ok} corretas de ${t} perguntas`,
+    statOk:'Corretas',statBad:'Incorretas',statTotal:'Total',
+    btnRepeat:'Repetir (novas perguntas)',btnChange:'Mudar módulo',
+    reviewTitle:(n)=>`Perguntas incorretas (${n})`,
+    confirmAbort:'Sair do questionário? O progresso atual será perdido.',
+    msg100:{emoji:'🏆',grade:'Excelente! — 3 de 3',cls:'grade-pass',color:'var(--green)',msg:'Perfeito! Demonstra um domínio sólido dos procedimentos de segurança operacional. O seu conhecimento protege a sua equipa, os passageiros e a aeronave. Continue assim.'},
+    msg67:{emoji:'✅',grade:'Bom — 2 de 3',cls:'grade-ok',color:'var(--amber)',msg:'Bom resultado, mas a segurança operacional não admite margem de erro. Reveja as perguntas erradas e consulte o capítulo correspondente do GOM antes do próximo turno.'},
+    msg0:{emoji:'⚠️',grade:'Precisa de revisão',cls:'grade-fail',color:'var(--red)',msg:'Os procedimentos de segurança são a primeira linha de defesa contra incidentes na rampa e no terminal. É imprescindível rever o GOM e completar este questionário novamente antes de operar.'}
+  }
+};
+
+function setLang(l) {
+  lang = l;
+  const t = T[l];
+  try {
+    // QR screen
+    document.querySelector('.qr-title').innerHTML = t.qrTitle;
+    document.querySelector('.qr-sub').textContent = t.qrSub;
+    // Update hint text safely
+    const hint = document.querySelector('.qr-hint');
+    if (hint) {
+      const nodes = Array.from(hint.childNodes);
+      const textNode = nodes.find(n => n.nodeType === 3 && n.textContent.trim());
+      if (textNode) textNode.textContent = ' ' + t.qrHint;
+    }
+    document.querySelector('.qr-enter-btn').textContent = t.qrEnter;
+    // Select screen
+    document.querySelector('.sel-title').textContent = t.selTitle;
+    document.querySelector('.sel-sub').textContent = t.selSub;
+    const cards = document.querySelectorAll('.sel-card-title');
+    if (cards[0]) cards[0].textContent = t.bohTitle;
+    if (cards[1]) cards[1].textContent = t.fohTitle;
+    const descs = document.querySelectorAll('.sel-card-desc');
+    if (descs[0]) descs[0].textContent = t.bohDesc;
+    if (descs[1]) descs[1].textContent = t.fohDesc;
+    // Result stat labels
+    const lbls = document.querySelectorAll('.stat-lbl');
+    if (lbls[0]) lbls[0].textContent = t.statOk;
+    if (lbls[1]) lbls[1].textContent = t.statBad;
+    if (lbls[2]) lbls[2].textContent = t.statTotal;
+  } catch(e) { console.warn('setLang error:', e); }
+  show('screen-select');
+}
+
+// ── QR ──
+window.addEventListener('load', () => {
+  new QRCode(document.getElementById('qr-canvas'), {
+    text: QUIZ_URL,
+    width: 220,
+    height: 220,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  // Show QR screen only when accessed with ?qr=1 (for display purposes)
+  // All other access (including scanning the QR) goes directly to language selection
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('qr') === '1') {
+    show('screen-qr');
+  }
+  // screen-lang is shown by default (no hidden class)
+});
+
+// ── QUIZ LOGIC ──
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz(mode) {
+  currentMode = mode;
+  const bank = ALL_QUESTIONS[lang] || ALL_QUESTIONS['es'];
+  const pool = shuffle([...bank[mode].map(q => ({ ...q, side: mode }))]);
+  quiz.questions = pool.slice(0, 3);
+  quiz.idx = 0; quiz.ok = 0; quiz.bad = 0; quiz.results = [];
+  show('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const t = T[lang];
+  const q = quiz.questions[quiz.idx];
+  const total = quiz.questions.length;
+  const progress = quiz.idx / total;
+
+  document.getElementById('prog-text').textContent = t.progOf(quiz.idx + 1, total);
+  document.getElementById('prog-pct').textContent = Math.round(progress * 100) + '%';
+  document.getElementById('prog-fill').style.width = (progress * 100) + '%';
+  document.getElementById('live-ok').textContent = quiz.ok;
+  document.getElementById('live-bad').textContent = quiz.bad;
+  document.getElementById('q-num').textContent = `${quiz.idx + 1}/${total}`;
+  document.getElementById('exit-btn-lbl').textContent = t.exit;
+
+  const tag = document.getElementById('q-tag');
+  tag.textContent = q.side === 'boh' ? t.tagBoh : t.tagFoh;
+  tag.className = 'q-tag ' + (q.side === 'boh' ? 'tag-boh' : 'tag-foh');
+  document.getElementById('q-topic').textContent = q.t;
+  document.getElementById('q-text').textContent = q.q;
+
+  document.getElementById('q-opts').innerHTML = q.o.map((o, i) => `
+    <button class="opt-btn" id="opt-${i}" onclick="answer(${i})">
+      <span class="opt-letter">${['A','B','C'][i]}</span>
+      <span>${o}</span>
+    </button>`).join('');
+
+  const fb = document.getElementById('q-fb');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  const nb = document.getElementById('next-btn');
+  nb.className = 'next-btn';
+  nb.innerHTML = quiz.idx + 1 < total
+    ? t.next + ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>'
+    : t.results + ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+}
+
+function answer(chosen) {
+  const t = T[lang];
+  const q = quiz.questions[quiz.idx];
+  const correct = q.c;
+  const isOk = chosen === correct;
+
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById('opt-' + i);
+    if (!btn) continue;
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && !isOk) btn.classList.add('wrong');
+  }
+
+  const fb = document.getElementById('q-fb');
+  fb.className = 'feedback-box show ' + (isOk ? 'ok' : 'bad');
+  fb.innerHTML = isOk
+    ? '<strong>' + t.correct + '</strong> ' + q.f
+    : '<strong>' + t.wrong + '</strong> ' + q.f;
+
+  if (isOk) quiz.ok++; else quiz.bad++;
+  quiz.results.push({ q, chosen, correct, isOk });
+
+  document.getElementById('live-ok').textContent = quiz.ok;
+  document.getElementById('live-bad').textContent = quiz.bad;
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function nextQuestion() {
+  quiz.idx++;
+  if (quiz.idx >= quiz.questions.length) showResult();
+  else renderQuestion();
+}
+
+function confirmAbort() {
+  if (confirm(T[lang].confirmAbort)) {
+    show('screen-select');
+  }
+}
+
+function showResult() {
+  const t = T[lang];
+  show('screen-result');
+  const total = quiz.questions.length;
+  const pct = Math.round((quiz.ok / total) * 100);
+
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-label').textContent = t.resLabel(quiz.ok, total);
+  document.getElementById('res-ok').textContent = quiz.ok;
+  document.getElementById('res-bad').textContent = quiz.bad;
+  document.getElementById('res-total').textContent = total;
+  document.getElementById('btn-repeat').textContent = t.btnRepeat;
+  document.getElementById('btn-change').textContent = t.btnChange;
+
+  const m = pct === 100 ? t.msg100 : pct >= 67 ? t.msg67 : t.msg0;
+
+  document.getElementById('res-emoji').textContent = m.emoji;
+  document.getElementById('res-pct').style.color = m.color;
+  const grade = document.getElementById('res-grade');
+  grade.textContent = m.grade;
+  grade.className = 'result-grade ' + m.cls;
+
+  let msgEl = document.getElementById('res-msg');
+  if (!msgEl) {
+    msgEl = document.createElement('p');
+    msgEl.id = 'res-msg';
+    msgEl.style.cssText = 'font-size:15px;line-height:1.65;color:var(--gray-light);max-width:480px;margin:0 auto 28px;text-align:center;padding:0 8px';
+    grade.insertAdjacentElement('afterend', msgEl);
+  }
+  msgEl.textContent = m.msg;
+
+  const wrong = quiz.results.filter(r => !r.isOk);
+  const rev = document.getElementById('review-section');
+  if (wrong.length === 0) { rev.innerHTML = ''; return; }
+  rev.innerHTML = `
+    <div class="review-title">${t.reviewTitle(wrong.length)}</div>
+    ${wrong.map(r => `
+      <div class="review-card">
+        <div class="review-q">${r.q.q}</div>
+        <div class="review-row"><span class="review-icon">✗</span><span class="review-given">${r.q.o[r.chosen]}</span></div>
+        <div class="review-row"><span class="review-icon review-correct">✓</span><span class="review-correct">${r.q.o[r.correct]}</span></div>
+        <div class="review-explain">${r.q.f}</div>
+      </div>`).join('')}`;
+}
+
+function restartSame() {
+  startQuiz(currentMode);
+}
+
+function show(id) {
+  document.querySelectorAll('.app > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
