@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Quiz — Azul Handling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --navy:  #0a1628;
+  --navy2: #0f2040;
+  --blue:  #1a5aff;
+  --blue-dim: #1a3a8a;
+  --amber: #f59e0b;
+  --red:   #ef4444;
+  --green: #22c55e;
+  --gray:  #8b9ab0;
+  --gray-light: #c5d0e0;
+  --white: #f0f4ff;
+  --card:  #0d1e3a;
+  --card2: #112240;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(26,90,255,0.5);
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--white);font-family:var(--font-body);font-size:15px;line-height:1.6;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:16px}
+.header-right{display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.logo-badge{background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.06em}
+.header-logo{height:30px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:0.85}
+.header-divider{width:1px;height:28px;background:var(--border)}
+.header-meta{font-size:11px;color:var(--gray);text-align:right;line-height:1.5}
+
+/* LAYOUT */
+.app{max-width:600px;margin:0 auto;padding:32px 20px 80px}
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PANTALLA IDIOMA ── */
+#screen-lang{animation:fadeIn .4s ease;text-align:center;padding-top:20px}
+.lang-title{font-family:var(--font-display);font-size:42px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.1;margin-bottom:6px}
+.lang-title span{color:var(--blue)}
+.lang-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:420px;margin:0 auto}
+.lang-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 14px 22px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;user-select:none}
+.lang-card:hover{border-color:var(--border-hover);background:var(--card2);transform:translateY(-2px)}
+.lang-card:active{transform:translateY(0)}
+.lang-flag{font-size:38px;line-height:1;margin-bottom:10px}
+.lang-name{font-family:var(--font-display);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em}
+.lang-native{font-size:12px;color:var(--gray);margin-top:3px}
+
+/* ── PANTALLA QR ── */
+#screen-qr{animation:fadeIn .4s ease;text-align:center}
+.qr-title{font-family:var(--font-display);font-size:38px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.1;margin-bottom:6px}
+.qr-title span{color:var(--blue)}
+.qr-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.qr-frame{display:inline-flex;flex-direction:column;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 36px}
+#qr-canvas{border-radius:12px;overflow:hidden;background:#fff;padding:10px}
+.qr-url{font-size:12px;color:var(--gray);word-break:break-all;max-width:260px;text-align:center;line-height:1.5}
+.qr-hint{margin-top:28px;font-size:13px;color:var(--gray);display:flex;align-items:center;gap:8px;justify-content:center}
+.qr-hint-icon{width:20px;height:20px;opacity:0.5}
+.qr-enter-btn{margin-top:32px;background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:8px;padding:10px 24px;font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color .2s,color .2s}
+.qr-enter-btn:hover{border-color:var(--border-hover);color:var(--white)}
+
+/* ── PANTALLA SELECCIÓN ── */
+#screen-select{animation:fadeIn .35s ease;text-align:center}
+.sel-title{font-family:var(--font-display);font-size:34px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.sel-sub{color:var(--gray);font-size:14px;margin-bottom:36px}
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:480px;margin:0 auto}
+.sel-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 20px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;user-select:none}
+.sel-card:hover{border-color:var(--border-hover);background:var(--card2);transform:translateY(-2px)}
+.sel-card:active{transform:translateY(0)}
+.sel-card-icon{font-size:36px;margin-bottom:12px;line-height:1}
+.sel-card-title{font-family:var(--font-display);font-size:26px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.sel-card-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.badge-boh{background:rgba(26,90,255,0.2);color:#7db3ff}
+.badge-foh{background:rgba(245,158,11,0.2);color:#fcd34d}
+.sel-card-desc{font-size:12px;color:var(--gray);line-height:1.5}
+
+/* ── PANTALLA QUIZ ── */
+#screen-quiz{animation:slideUp .3s ease}
+.quiz-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.quiz-progress-wrap{flex:1;min-width:180px}
+.quiz-progress-label{font-size:12px;color:var(--gray);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar-bg{background:var(--card);border-radius:99px;height:6px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .4s ease}
+.quiz-score-strip{display:flex;gap:14px;font-size:13px;align-items:center}
+.score-item{display:flex;align-items:center;gap:5px}
+.score-dot{width:8px;height:8px;border-radius:50%}
+.dot-ok{background:var(--green)}
+.dot-bad{background:var(--red)}
+.exit-btn{background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.exit-btn:hover{border-color:var(--border-hover);color:var(--white)}
+
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px 24px 22px;animation:slideUp .3s ease}
+.q-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.q-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 9px;border-radius:5px}
+.tag-boh{background:rgba(26,90,255,0.2);color:#7db3ff}
+.tag-foh{background:rgba(245,158,11,0.2);color:#fcd34d}
+.q-topic{font-size:12px;color:var(--gray)}
+.q-num-badge{margin-left:auto;font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--gray)}
+.q-text{font-size:16px;font-weight:500;line-height:1.55;margin-bottom:18px;color:#e8eeff}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt-btn{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;text-align:left;color:var(--white);font-size:14px;line-height:1.5;font-family:var(--font-body);width:100%;transition:border-color .15s,background .15s}
+.opt-btn:hover:not(:disabled){border-color:var(--border-hover);background:#0f2a50}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:var(--green);background:rgba(34,197,94,0.08)}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,0.08)}
+.opt-letter{font-family:var(--font-display);font-size:15px;font-weight:700;min-width:22px;padding-top:1px;color:var(--gray);flex-shrink:0;transition:color .15s}
+.opt-btn.correct .opt-letter{color:var(--green)}
+.opt-btn.wrong .opt-letter{color:var(--red)}
+.feedback-box{margin-top:14px;padding:13px 16px;border-radius:10px;font-size:13px;line-height:1.55;display:none;animation:fadeIn .25s ease}
+.feedback-box.show{display:block}
+.feedback-box.ok{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#a7f3c0}
+.feedback-box.bad{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+.feedback-box strong{font-weight:600}
+.q-nav{display:flex;justify-content:flex-end;margin-top:18px}
+.next-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:11px 28px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;display:none;align-items:center;gap:8px;transition:background .15s}
+.next-btn.show{display:flex}
+.next-btn:hover{background:#1248cc}
+.next-btn svg{width:16px;height:16px}
+
+/* ── PANTALLA RESULTADO ── */
+#screen-result{animation:fadeIn .35s ease}
+.result-hero{text-align:center;padding:36px 20px 30px}
+.result-emoji{font-size:60px;line-height:1;margin-bottom:14px}
+.result-pct{font-family:var(--font-display);font-size:76px;font-weight:800;line-height:1;margin-bottom:6px}
+.result-label{font-size:15px;color:var(--gray);margin-bottom:28px}
+.result-grade{display:inline-block;font-family:var(--font-display);font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:7px 22px;border-radius:8px;margin-bottom:32px}
+.grade-pass{background:rgba(34,197,94,0.2);color:#86efac;border:1px solid rgba(34,197,94,0.4)}
+.grade-ok{background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.4)}
+.grade-fail{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4)}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 12px;text-align:center}
+.stat-val{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em}
+.val-ok{color:var(--green)}.val-bad{color:var(--red)}.val-neutral{color:var(--blue)}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:13px 26px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1248cc}
+.btn-secondary{background:transparent;color:var(--white);border:1px solid var(--border);border-radius:8px;padding:13px 26px;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color .15s}
+.btn-secondary:hover{border-color:var(--border-hover)}
+.review-section{margin-top:36px}
+.review-title{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;color:var(--red);display:flex;align-items:center;gap:10px}
+.review-title::after{content:'';flex:1;height:1px;background:rgba(239,68,68,0.3)}
+.review-card{background:var(--card);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:16px 18px;margin-bottom:10px}
+.review-q{font-size:14px;font-weight:500;margin-bottom:10px;color:#e8eeff;line-height:1.5}
+.review-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;margin-bottom:5px}
+.review-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.review-correct{color:#86efac}.review-given{color:#fca5a5}
+.review-explain{margin-top:10px;font-size:12px;color:var(--gray);line-height:1.55;padding-top:10px;border-top:1px solid var(--border)}
+
+@media(max-width:500px){
+  .sel-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .sel-card{padding:22px 12px}
+  .sel-card-title{font-size:20px}
+  .qr-title{font-size:28px}
+  .result-pct{font-size:56px}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-left">
+    <img class="header-logo" src="data:image/png;base64,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" alt="Azul Handling">
+    <div class="header-divider"></div>
+    <div class="logo">
+      <span>Safety Quiz</span>
+      <span class="logo-badge">GOM</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <img class="header-logo" src="data:image/png;base64,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" alt="Ryanair">
+    <div class="header-meta">
+      Issue 10 · Rev 0
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ── PANTALLA QR ── -->
+  <section id="screen-qr">
+    <div style="margin-bottom:12px">
+      <div class="qr-title">Escanea<br><span>& Practica</span></div>
+      <p class="qr-sub">Accede al cuestionario de seguridad operacional desde tu móvil</p>
+    </div>
+    <div class="qr-frame">
+      <div id="qr-canvas"></div>
+      <div class="qr-url">https://floncis.github.io/Safety-Quiz/azul_gom_quiz.html</div>
+    </div>
+    <div class="qr-hint">
+      <svg class="qr-hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Apunta la cámara del móvil al código QR
+    </div>
+    <br>
+    <button class="qr-enter-btn" onclick="show('screen-lang')">
+      Entrar directamente →
+    </button>
+  </section>
+
+  <!-- ── PANTALLA IDIOMA ── -->
+  <section id="screen-lang" class="hidden">
+    <div class="lang-title">Choose<br><span>Language</span></div>
+    <p class="lang-sub">Select your language / Selecciona tu idioma / Selecione o idioma</p>
+    <div class="lang-grid">
+      <div class="lang-card" onclick="setLang('es')">
+        <div class="lang-flag">🇪🇸</div>
+        <div class="lang-name">ES</div>
+        <div class="lang-native">Español</div>
+      </div>
+      <div class="lang-card" onclick="setLang('en')">
+        <div class="lang-flag">🇬🇧</div>
+        <div class="lang-name">EN</div>
+        <div class="lang-native">English</div>
+      </div>
+      <div class="lang-card" onclick="setLang('pt')">
+        <div class="lang-flag">🇵🇹</div>
+        <div class="lang-name">PT</div>
+        <div class="lang-native">Português</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA SELECCIÓN ── -->
+  <section id="screen-select" class="hidden">
+    <div class="sel-title">Elige tu módulo</div>
+    <p class="sel-sub">Se seleccionarán 3 preguntas aleatorias del módulo elegido</p>
+    <div class="sel-grid">
+      <div class="sel-card" onclick="startQuiz('boh')">
+        <div class="sel-card-icon">✈️</div>
+        <div class="sel-card-badge badge-boh">BOH</div>
+        <div class="sel-card-title">Rampa</div>
+        <div class="sel-card-desc">Pushback · Carga · GSE · Walkaround · Zonas de peligro</div>
+      </div>
+      <div class="sel-card" onclick="startQuiz('foh')">
+        <div class="sel-card-icon">🛂</div>
+        <div class="sel-card-badge badge-foh">FOH</div>
+        <div class="sel-card-title">Pasaje</div>
+        <div class="sel-card-desc">Check-in · Embarque · Equipaje · Pasajeros · LID</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA QUIZ ── -->
+  <section id="screen-quiz" class="hidden">
+    <div class="quiz-topbar">
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-label">
+          <span id="prog-text">Pregunta 1 de 3</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="quiz-score-strip">
+        <div class="score-item"><div class="score-dot dot-ok"></div><span id="live-ok">0</span></div>
+        <div class="score-item"><div class="score-dot dot-bad"></div><span id="live-bad">0</span></div>
+        <button class="exit-btn" onclick="confirmAbort()"><span id="exit-btn-lbl">Salir</span></button>
+      </div>
+    </div>
+    <div class="q-card" id="q-card">
+      <div class="q-header">
+        <span class="q-tag" id="q-tag">RAMPA</span>
+        <span class="q-topic" id="q-topic"></span>
+        <span class="q-num-badge" id="q-num">1/3</span>
+      </div>
+      <p class="q-text" id="q-text"></p>
+      <div class="options" id="q-opts"></div>
+      <div class="feedback-box" id="q-fb"></div>
+      <div class="q-nav">
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+          Siguiente
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PANTALLA RESULTADO ── -->
+  <section id="screen-result" class="hidden">
+    <div class="result-hero">
+      <div class="result-emoji" id="res-emoji">🎯</div>
+      <div class="result-pct" id="res-pct">0%</div>
+      <div class="result-label" id="res-label">0 correctas de 3 preguntas</div>
+      <div class="result-grade" id="res-grade">—</div>
+    </div>
+    <div class="result-stats">
+      <div class="stat-card"><div class="stat-val val-ok" id="res-ok">0</div><div class="stat-lbl">Correctas</div></div>
+      <div class="stat-card"><div class="stat-val val-bad" id="res-bad">0</div><div class="stat-lbl">Incorrectas</div></div>
+      <div class="stat-card"><div class="stat-val val-neutral" id="res-total">0</div><div class="stat-lbl">Total</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" id="btn-repeat" onclick="restartSame()">Repetir (nuevas preguntas)</button>
+      <button class="btn-secondary" id="btn-change" onclick="show('screen-select')">Cambiar módulo</button>
+    </div>
+    <div class="review-section" id="review-section"></div>
+  </section>
+
+</div>
+
+<script>
+const QUIZ_URL = 'https://floncis.github.io/Safety-Quiz/azul_gom_quiz.html';
+
+const ALL_QUESTIONS = {
+boh:[
+  {t:"Zonas de peligro",q:"¿Cuándo está permitido acercarse a una aeronave con las luces anticolisión encendidas?",o:["Nunca; con las luces anticolisión encendidas nadie puede aproximarse bajo ninguna circunstancia","Solo para colocar los calzos en el tren de morro (NLG) y conectar la GPU; cualquier otro acercamiento requiere que las luces estén apagadas y los motores parados","Siempre que el supervisor de rampa haya dado la señal de aproximación segura"],c:1,f:"GOM 4.2.3: la única excepción para acercarse con luces anticolisión encendidas es colocar los calzos del NLG y conectar la GPU."},
+  {t:"Señal safe to approach",q:"¿Quién autoriza la señal 'safe to approach' tras la llegada y cómo se ejecuta?",o:["El piloto desde cabina, levantando el pulgar visible desde la ventana","El Responsible Person en rampa, tras confirmar luces anticolisión apagadas y motores parados; señal: ambos brazos/wands a 90° avanzados hacia adelante","El agente de headset, tras confirmar verbalmente con la torre que los motores están parados"],c:1,f:"GOM 4.3.2.4: el Responsible Person verifica luces apagadas y motores parados antes de emitir la señal safe to approach."},
+  {t:"Walkaround",q:"¿Cuándo debe realizarse el walkaround de llegada según el GOM de Ryanair?",o:["Solo si el comandante lo solicita o hay sospecha de daños","Tras todas las llegadas y antes de todas las salidas; también en primer vuelo del día, después de firebreaks y cambios de aeronave","Una vez al día, al inicio de la primera rotación de cada aeronave"],c:1,f:"GOM 4.3.3: walkarounds son obligatorios tras todas las llegadas y antes de todas las salidas; también en primer vuelo, tras firebreaks y cambios de aeronave."},
+  {t:"Walkaround",q:"Si durante el walkaround previo a la salida se detecta daño no marcado en el fuselaje, ¿qué acción se requiere?",o:["Registrarlo en el log de la base y notificarlo al siguiente turno","Comunicarlo inmediatamente al comandante, a Engineering y al personal de supervisión, y emitir un Ground Safety Report","Continuar la operación y notificarlo en el siguiente turnaround"],c:1,f:"GOM 4.3.6.3: cualquier anomalía —abolladuras no marcadas, daños en paneles, fugas, pitot covers no retirados— debe reportarse de inmediato al comandante, Engineering y al personal de supervisión."},
+  {t:"FOD",q:"¿Qué riesgos concretos puede generar el FOD (Foreign Object Debris) según el GOM?",o:["Exclusivamente daños a los neumáticos y al tren de aterrizaje","Ingestión en motores causando daños o fallo, daños a neumáticos/tren/sistemas de control y riesgo de tropiezos para el personal","Solo riesgo de ingesta por motores durante el arranque"],c:1,f:"GOM 4.2.7: el FOD puede ser ingerido por motores (daño o fallo), dañar neumáticos/tren/sistemas de control, y suponer riesgo de tropiezos para el personal en rampa."},
+  {t:"FOD",q:"¿Qué condición deben cumplir los contenedores de FOD en rampa?",o:["Estar pintados de amarillo y en el perímetro del ERA","Ser cerrados/con tapa para evitar que el viento disperse su contenido","Vaciarse al inicio de cada turno y sellarse tras llenarse"],c:1,f:"GOM 4.2.7: los contenedores de FOD deben ser cerrados (enclosed) para evitar que el viento los disperse hacia zonas de peligro."},
+  {t:"Pushback",q:"¿Cuántos miembros de equipo son obligatorios en un pushback con tug y towbar?",o:["Dos: tug driver y headset operator","Tres: tug driver, headset operator y wingman","Cuatro: tug driver, headset operator, wingman y brake rider en cabina"],c:1,f:"GOM 4.3.7.6: pushback con tug y towbar requiere tres personas: tug driver, headset operator y wingman. Para TBL son suficientes tug driver y headset operator."},
+  {t:"Pushback — wingman",q:"¿Qué debe hacer el wingman si detecta un peligro durante el pushback?",o:["Avisar verbalmente al tug driver y esperar confirmación antes de actuar","Dar la señal STOP de inmediato, manteniendo contacto visual con tug driver y headset operator","Detener el pushback solo si el peligro afecta directamente al área del morro"],c:1,f:"GOM 4.3.6.4: el wingman debe mantener contacto visual con tug driver y headset operator. Ante cualquier duda o peligro debe dar la señal STOP inmediatamente."},
+  {t:"Pushback — All Clear",q:"¿Cuándo puede el headset operator dar la señal final 'All Clear' al comandante tras el pushback?",o:["Inmediatamente después de que el tug haya frenado en la posición final","Solo cuando tug, towbar y wingman están despejados, los motores arrancan normalmente y el comandante aprueba la desconexión del headset","Cuando el tug driver confirma verbalmente que el freno de estacionamiento del tractor está puesto"],c:1,f:"GOM 4.3.7.11: solo cuando tug, towbar y wingman están despejados y los motores han arrancado normalmente, el comandante aprueba la desconexión. El headset operator muestra el bypass pin y da la señal final."},
+  {t:"Pushback — fraseología",q:"¿Qué frase confirma el ground crew al comandante para iniciar el pushback?",o:["'Ready for pushback, parking brake set'","'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'","'Ground crew in position, cleared to push'"],c:1,f:"GOM 4.3.7.5: ground crew responde confirmando 'Bypass pin is installed and all doors and hatches are closed and ground equipment is removed'."},
+  {t:"Pushback — zonas de peligro",q:"Durante el pushback, ¿en qué áreas deben permanecer alejados todos los miembros del equipo de rampa?",o:["Solo del área de ingesta de motores y la trayectoria del avión","Del área bajo cualquier parte del avión (fuselaje, alas, estabilizador, motores, NLG), la trayectoria del avión, la del tractor y el área de peligro del motor","Solo del área de exhaust de motores y del towbar"],c:1,f:"GOM 4.3.7.7: durante el pushback todo el personal debe mantenerse alejado del área bajo cualquier parte del avión, de la trayectoria del avión y del tractor, y del área de peligro del motor."},
+  {t:"Bypass pin",q:"¿Qué debe verificar el headset operator tras desconectar el towbar y retirar el bypass pin?",o:["Que el freno de estacionamiento del tractor esté puesto","Que el steering lock-out lever ha vuelto a su posición; si detecta fallo, debe informar al comandante","Que el wingman ha abandonado la zona de maniobra"],c:1,f:"GOM 4.3.7.11 d): tras retirar el bypass pin se debe confirmar que el steering lock-out lever ha vuelto a su posición. Cualquier fallo debe reportarse al comandante."},
+  {t:"Chocks",q:"¿Bajo qué condición pueden retirarse los calzos del tren de morro sin notificación previa?",o:["Nunca; la retirada de cualquier calzo requiere confirmación del comandante","Para facilitar la conexión del tug, siempre que los calzos del tren principal (MLG) permanezcan colocados","Solo con las luces anticolisión apagadas y autorización escrita del responsable de turno"],c:1,f:"GOM 4.3.6.2: los calzos del NLG pueden retirarse sin notificación previa para facilitar la conexión del tug, con la condición de que los calzos del MLG sigan colocados."},
+  {t:"Móviles en rampa",q:"¿Qué restricción específica aplica al uso del móvil durante el repostaje?",o:["Está completamente prohibido en ambos lados del avión durante el repostaje","Solo se permite en el lado opuesto (izquierdo) del avión durante el repostaje","Se puede usar libremente si es para comunicación de trabajo con el supervisor"],c:1,f:"GOM 4.2.6: durante el repostaje el móvil solo se permite en el lado opuesto (izquierdo) del avión. Está prohibido durante marshalling, taxi-in, pushback, conducción y operación de GSE."},
+  {t:"Bodegas",q:"¿Qué se debe hacer si una puerta de bodega no abre durante el turnaround?",o:["Aplicar fuerza adicional si la puerta está desbloqueada según el sistema","No usar fuerza excesiva; contactar con Engineering y notificar al comandante o supervisor","Solicitar al comandante que la abra desde cabina mediante el sistema eléctrico"],c:1,f:"GOM 4.3.5.1 f): si la puerta de bodega no abre, no usar fuerza excesiva. Hay que contactar con Engineering y notificar al comandante o al supervisor de tierra."},
+  {t:"Bodegas — aproximación",q:"¿Cuándo está prohibido acercarse a las puertas de bodega aunque el avión ya esté estacionado?",o:["Cuando hay pasajeros desembarcando","Cuando los motores no han completado su deceleración, las luces anticolisión no están apagadas o no se ha dado la señal de aproximación segura","Solo cuando el comandante lo indica explícitamente"],c:1,f:"GOM 4.3.5.1 b): no aproximarse a puertas de bodega hasta que los motores hayan decelerado, las luces anticolisión estén apagadas y se haya dado la señal de aproximación."},
+  {t:"Orden de carga",q:"¿En qué orden deben cargarse y descargarse las bodegas de la B737 para evitar el vuelco (tail tip)?",o:["Cargar y descargar siempre de proa a popa uniformemente","Descarga: AFT primero, FWD al final. Carga: FWD primero, AFT al final","Descarga y carga comenzando siempre por la bodega más accesible"],c:1,f:"GOM 5.7.5: descarga → AFT primero, FWD al final. Carga → FWD primero, AFT al final. Previene el desplazamiento del CG AFT que puede provocar el vuelco del avión."},
+  {t:"Hold 3",q:"¿Qué carga máxima puede cargarse en la bodega AFT Hold 3 antes de que empiece el embarque o desembarque?",o:["Sin límite si los pasajeros aún no han comenzado","Un máximo de 1.000 kg de carga o repuestos; la Hold 4 debe permanecer vacía","500 kg, y solo si el comandante lo autoriza en el LIR"],c:1,f:"GOM 5.7.6: límite de 1.000 kg de carga o repuestos en la bodega AFT Hold 3 antes del embarque/desembarque. La Hold 4 debe permanecer vacía."},
+  {t:"GSE — frenos",q:"¿Cuándo debe realizarse la verificación de frenos del GSE motorizado antes de entrar en el ERA?",o:["Al inicio del turno, antes de la primera operación del día","Al menos una vez antes de entrar en el ERA o a 5 metros del avión, aunque no haya línea de contención marcada","Solo si se detecta irregularidad durante la inspección visual previa al turno"],c:1,f:"GOM 4.5.2 a): la verificación de frenos del GSE motorizado debe realizarse al menos una vez antes de entrar en el ERA o a 5 metros del avión, incluso sin línea marcada."},
+  {t:"GSE — marshaller",q:"¿Cuándo se requiere un marshaller para posicionar o retirar GSE junto al avión?",o:["Siempre que el GSE tenga más de 2 toneladas de peso","Cuando la distancia al avión es inferior a 2 metros y el GSE no tiene sensores/cámaras/espejos ni el operador tiene línea de visión directa","Solo cuando la iluminación es insuficiente o hay niebla"],c:1,f:"GOM 4.5.2 d): se requiere marshaller para posicionar/retirar GSE a menos de 2 metros del avión, a menos que el GSE tenga sensores/cámaras/espejos o el operador tenga línea de visión directa."},
+  {t:"GSE — danger area",q:"¿Qué está expresamente prohibido respecto a un vehículo tractor al que ya está conectado GSE?",o:["Arrancar el motor sin haber comprobado los frenos antes","Reentrar en la zona de peligro una vez que el GSE está conectado al tractor, sin avisar primero al conductor","Aparcar el tractor en el ERA con el GSE conectado en ninguna circunstancia"],c:1,f:"GOM 4.5.1 n): está prohibido reentrar en la zona de peligro una vez que el GSE está conectado al tractor sin alertar primero al conductor."},
+  {t:"GPU — ganchos",q:"¿Qué tipo de ganchos están prohibidos para fijar el cable de la GPU al avión?",o:["Los ganchos de plástico, ya que pueden romperse y caer como FOD","Los ganchos metálicos; solo se permiten los de plástico","Los ganchos de velcro o tela, ya que no ofrecen sujeción suficiente"],c:1,f:"GOM 4.5.6 e): los ganchos metálicos están expresamente prohibidos para sujetar el cable de GPU al avión. Solo se permiten ganchos de plástico."},
+  {t:"GPU — desconexión",q:"¿Qué verificación debe hacer el agente de tierra antes de desconectar la GPU del avión?",o:["Comprobar que el APU está operativo y en carga","Solicitar siempre la aprobación del comandante antes de desconectar, usando señales manuales o headset","Confirmar que ningún pasajero está a bordo y que los motores están parados"],c:1,f:"GOM 4.5.6 f): siempre se debe solicitar la aprobación del comandante antes de desconectar la GPU, mediante señales manuales o por headset."},
+  {t:"Seguridad de aeronave",q:"¿Qué principio fundamental rige la seguridad de la aeronave según el cap. 6.5 del GOM?",o:["Ningún pasajero puede aproximarse al avión sin tarjeta de embarque validada","Ninguna persona autorizada puede dejar la aeronave desatendida y desprotegida; la última persona en salir debe asegurar que queda protegida","El avión debe tener siempre al menos dos puertas abiertas para facilitar la inspección"],c:1,f:"GOM 6.5: ninguna persona autorizada puede dejar un avión de Ryanair sin supervisión y sin protección. La última persona autorizada que abandona la aeronave debe garantizar que está protegida."},
+  {t:"Hold check",q:"Según el Reglamento (CE) 300/2008, ¿cuándo NO se requiere un hold check en aeropuertos de la UE?",o:["Nunca; el hold check es obligatorio en todos los vuelos con origen en la UE","En aeronaves que llegan y salen de la parte crítica de un aeropuerto de la UE; cuando se requiera: inspección visual primero y registro manual si no se confirma la integridad","Solo en vuelos domésticos dentro del espacio Schengen"],c:1,f:"GOM 6.5.2: conforme al Reg. (CE) 300/2008, las aeronaves que llegan y salen de la parte crítica de un aeropuerto de la UE no requieren hold check."},
+  {t:"Remolque — brake rider",q:"¿Quién debe ocupar el asiento de cabina durante una operación de remolque (towing)?",o:["Un agente de handling formado como brake rider, ingeniero, o miembro de tripulación de vuelo aprobado","El comandante de la aeronave en todo momento","No es necesario ningún brake rider si el tug driver es el responsable del frenado"],c:0,f:"GOM 4.4.1: durante el remolque debe haber un brake rider (qualified person) en cabina. Puede ser ingeniero, tripulación de vuelo o personal de handling aprobado por Ryanair."},
+  {t:"Remolque — 20 pies",q:"¿Qué señal debe emitirse si cualquier obstáculo está a menos de 20 pies (6 m) del avión durante el remolque?",o:["El tug driver detiene la operación y espera instrucciones de la torre","La persona responsable emite la alarma con señales manuales y/o bocinazos; si no se reconoce, señales y bocinazos repetidos deben impedir continuar el remolque","Solo se requiere ampliar el radio de separación a 10 metros"],c:1,f:"GOM 4.4.5: si cualquier equipo o estructura está a menos de 20 pies/6 metros del avión, la persona responsable debe activar la alarma con señales estándar y/o bocinazos."},
+  {t:"PPE",q:"¿Qué obligación tiene el personal si detecta PPE defectuoso o inadecuado?",o:["Puede seguir usándolo hasta el siguiente control de equipamiento si el defecto es menor","Debe reportarlo a la dirección y no usarlo, ya que puede poner en peligro la seguridad personal","Puede intercambiarlo con otro agente si dispone de PPE de reserva"],c:1,f:"GOM 6.3.2: el PPE defectuoso o inadecuado debe reportarse a la dirección y no debe usarse, ya que puede comprometer la seguridad personal."},
+  {t:"Ramp fire safety",q:"¿Qué restricción aplica a los vehículos de repostaje en el área del avión?",o:["Solo pueden acceder con el APU apagado","El acceso y egreso de los vehículos de repostaje no debe obstruirse con otros vehículos o equipos; las salidas de emergencia del avión no pueden obstruirse en ningún momento","Deben aparcar siempre a barlovento del avión"],c:1,f:"GOM 6.3.4: el acceso/egreso de vehículos de repostaje no debe obstruirse; y las salidas de emergencia del avión no deben obstruirse en ningún momento con GSE."},
+  {t:"Rapid disembarkation",q:"¿Cuál es la diferencia fundamental entre 'rapid disembarkation' y una evacuación de emergencia completa?",o:["No hay diferencia; ambos términos son sinónimos en el GOM","El rapid disembarkation es preventivo sin peligro inmediato; en ambos casos los pasajeros llevan todo su equipaje","El rapid disembarkation es un procedimiento preventivo sin peligro inmediato en el que todos dejan sus pertenencias a bordo; el comandante puede escalar a evacuación completa en cualquier momento"],c:2,f:"GOM 6.3.6: el rapid disembarkation es un procedimiento preventivo sin peligro inmediato en el que todos dejan sus pertenencias a bordo. El Aircraft Commander puede escalar a evacuación completa en cualquier momento."}
+],
+foh:[
+  {t:"Seguridad check-in",q:"¿Qué debe hacer el agente cuando completa el check-in de un pasajero con equipaje?",o:["Verificar solo el documento de viaje y el peso del equipaje","Confirmar que el pasajero no transporta mercancías peligrosas, además de verificar documentación y peso","Pedir al pasajero que firme una declaración sin necesidad de confirmación verbal"],c:1,f:"GOM 1.2.1: cuando un agente completa el check-in de un pasajero con equipaje, debe confirmar que el pasajero no transporta mercancías peligrosas."},
+  {t:"Clean Desk Policy",q:"¿Qué exige la 'Clean Desk Policy' para el personal en áreas públicas?",o:["Tener siempre visible la documentación del vuelo en el mostrador","No dejar documentos en blanco de Ryanair ni datos sensibles sobre superficies públicas","Guardar toda la documentación en papel en armarios cerrados durante las pausas"],c:1,f:"GOM 1.1: la Clean Desk Policy establece que no pueden dejarse documentos en blanco de Ryanair ni datos sensibles sobre superficies públicas."},
+  {t:"Equipaje de mano",q:"¿Cuántas bolsas de cabina puede llevar a bordo un pasajero sin priority boarding?",o:["Dos: una pequeña y una de 10 kg","Solo una bolsa pequeña (40×30×20 cm) más una bolsa de duty free (35×20×20 cm)","Una bolsa pequeña y un bolso de mano de cualquier tamaño"],c:1,f:"GOM 2.1.1: los clientes sin priority boarding solo pueden llevar 1 bolsa pequeña (40×30×20 cm) a bordo, más 1 bolsa de duty free (35×20×20 cm)."},
+  {t:"Hold bag — artículos prohibidos",q:"¿Qué elementos debe retirar el pasajero de su equipaje de bodega antes de facturarlo?",o:["Únicamente artículos de valor declarado superiores a 100 euros","Baterías de litio de repuesto, portátiles, tablets y cigarrillos electrónicos; también objetos de valor y documentos importantes","Solo los líquidos que superen los 100 ml"],c:1,f:"GOM 2.1.2.2 c) y d): los agentes deben instruir a los pasajeros a retirar del hold bag baterías de litio de repuesto, portátiles, tablets y e-cigarettes, y avisar sobre objetos de valor y documentos."},
+  {t:"NON-PRIORITY boarding",q:"Si en el embarque un pasajero NON-PRIORITY lleva una segunda bolsa grande de cabina, ¿cuál es el procedimiento correcto?",o:["Permitir el embarque y registrar el incidente","Informar cortésmente que la segunda bolsa debe facturarse como hold bag con el cargo aplicable; tras el pago, indicar que mueva objetos de valor, documentos, medicamentos, electrónicos y baterías de litio a su bolsa pequeña","Confiscar la segunda bolsa y devolverla en destino"],c:1,f:"GOM 2.1.2.3: informar cortésmente del cargo; tras el pago, instruir al pasajero a mover a la bolsa pequeña los objetos de valor, documentos, medicamentos, electrónicos y baterías de litio de repuesto."},
+  {t:"Límite de peso",q:"¿Cuál es el límite de peso individual por encima del cual un artículo no se acepta para transporte?",o:["25 kg","32 kg, salvo para EMAs (Electric Mobility Aids)","40 kg"],c:1,f:"GOM 2.2.1.2: por razones de seguridad, los artículos individuales de más de 32 kg no se aceptan. La excepción son los EMAs, aunque las dimensiones dependen de la puerta del avión."},
+  {t:"Etiqueta Heavy",q:"¿Qué etiqueta especial debe colocarse en los equipajes que superan los 23 kg?",o:["Etiqueta roja de 'Oversize'","Etiqueta 'Heavy' con el peso indicado","Etiqueta 'Fragile' para indicar manipulación especial"],c:1,f:"GOM 2.2.1.2 b): los equipajes de más de 23 kg deben etiquetarse como 'Heavy' con el peso mostrado."},
+  {t:"Check-in avanzado",q:"En el check-in avanzado/nocturno, ¿cuánto tiempo mínimo debe permanecer el pasajero en el terminal tras depositar su equipaje?",o:["Puede marcharse inmediatamente","10 minutos, para poder responder cualquier pregunta de seguridad durante el proceso de screening","30 minutos, para facilitar la reconciliación pasajero-equipaje"],c:1,f:"GOM 2.2.1.4 f): tras el advance bag drop los pasajeros deben permanecer en el terminal durante 10 minutos para responder cualquier pregunta de seguridad surgida durante el cribado."},
+  {t:"Check-in avanzado — problema",q:"Si en el check-in avanzado hay problemas con el equipaje de un pasajero y este no está disponible, ¿qué ocurre con sus maletas?",o:["Se cargan con etiqueta de incidencia para resolver en destino","Se retienen por separado y no se cargan hasta que el problema esté resuelto; si el pasajero no aparece, se retiran antes de la salida","Se entregan a otro pasajero del mismo vuelo para su custodia"],c:1,f:"GOM 2.2.1.4 h) e i): si surgen problemas y el pasajero no está disponible, las maletas se retienen por separado y no se cargan hasta resolver."},
+  {t:"No-show baggage",q:"¿Qué obliga el GOM respecto a los equipajes de pasajeros que no se presentan al embarque?",o:["Pueden volar si el agente de check-in certifica que fueron inspeccionados por rayos X","Los equipajes de no-show passengers se retiran antes de la salida","Pueden volar si el weight & balance lo permite y el comandante da su autorización"],c:1,f:"GOM 2.2.1.4 k): explícitamente: 'Bags of no-show passengers will be removed before departure'."},
+  {t:"Dangerous goods",q:"¿Qué señalización sobre mercancías peligrosas es obligatoria según el GOM?",o:["Solo en el mostrador de facturación y en la puerta de embarque","En áreas de ticketing, baggage drop y boarding; en los kioscos SSBD el proceso no puede completarse hasta que el pasajero reconoce las restricciones","Solo en los mostradores de facturación, en idioma local"],c:1,f:"GOM 1.1 y 1.2.1: la información sobre DG se muestra en ticketing, baggage drop y boarding. En los kioscos de autoservicio el proceso no puede completarse hasta que el pasajero reconoce las restricciones."},
+  {t:"SSBD — artículos prohibidos",q:"Al descubrir artículos prohibidos en el kiosko de auto bag drop (SSBD), ¿qué acciones son obligatorias?",o:["Denegar el boarding solo; no es necesario reportar si no hay incidencia posterior","Denegar el boarding, registrar y reportar a la autoridad aeroportuaria y al servicio de seguridad del estado de ocurrencia, y presentar un Ground Safety Report","Solo informar al supervisor de turno para que evalúe si escalar el incidente"],c:1,f:"GOM 1.2.3.2: si se encuentran artículos prohibidos en el SSBD se deniega el boarding, se registra el incidente, se reporta a la autoridad aeroportuaria y al servicio de seguridad del estado de ocurrencia, y se presenta un Ground Safety Report."},
+  {t:"EMA — confirmación seguridad",q:"¿Quién confirma que un EMA (Electric Mobility Aid) es seguro para el transporte antes de la carga?",o:["El agente de handling, que realiza la inspección de la batería de forma independiente","El proveedor de PRM confirma que la batería está aislada o retirada; ambas partes verifican esto antes de la carga","El comandante, que tiene la autoridad final sobre todos los artículos cargados"],c:1,f:"GOM 5.5.3: el proveedor de PRM confirma que el EMA es seguro (batería aislada o retirada) y ambas partes —proveedor y handling agent— verifican esto antes de la carga."},
+  {t:"EMA — número máximo",q:"¿Cuál es el número máximo de EMAs que permite transportar Ryanair en un vuelo?",o:["Uno por vuelo","Dos por vuelo","Sin límite si las dimensiones son conformes"],c:1,f:"GOM 5.5.3: 'Ryanair only permits the carriage of two EMAs'."},
+  {t:"EMA — bodega",q:"¿Dónde debe cargarse el primer EMA en la bodega de la B737?",o:["En Hold 3 (bodega trasera) para equilibrar el peso en la popa","En Hold 1 (bodega delantera); si hay un EMA en Hold 1, cargar buggies y gate bags en Hold 2; EMAs adicionales en Hold 3","En Hold 2 (bodega central) por ser la de mayor capacidad"],c:1,f:"GOM 5.5.4: máximo un EMA en Hold 1. Cargar artículos de bebé y gate bags en Hold 2 cuando haya EMA en Hold 1. EMAs adicionales en Hold 3."},
+  {t:"Marshalling de pasajeros",q:"¿Qué exige el GOM sobre el movimiento de pasajeros entre la puerta de embarque y el avión en rampa abierta?",o:["No hay requisitos especiales si el avión está estacionado y los motores parados","Debe asignarse siempre a un individuo específico para supervisar a los pasajeros entre el avión y el terminal","El personal de cabina es el único responsable del control de pasajeros en rampa"],c:1,f:"GOM 6.3.5: el movimiento de pasajeros debe estar controlado en todo momento. Un individuo específico debe asignarse siempre para hacer el marshalling entre el avión y el terminal."},
+  {t:"Boarding sin flight crew",q:"¿Bajo qué condición pueden los cabin crew embarcar pasajeros sin que esté la tripulación de vuelo?",o:["Solo si el retraso previsto es inferior a 15 minutos y el comandante autorizó por radio","Pueden embarcar sin tripulación de vuelo aplicando todos los procedimientos del capítulo 1, que deben mantenerse hasta que al menos un miembro de tripulación de vuelo esté a bordo","No está permitido bajo ninguna circunstancia embarcar sin tripulación de vuelo presente"],c:1,f:"GOM 6.3.7: la cabin crew puede embarcar sin tripulación de vuelo en circunstancias operativas excepcionales, aplicando todos los procedimientos del cap. 1 hasta que al menos un miembro de tripulación de vuelo esté a bordo."},
+  {t:"Reporte de seguridad",q:"¿Qué información mínima debe incluir un reporte de brecha de seguridad?",o:["Solo el nombre del reportante y una descripción general","Ubicación, hora, personas involucradas y detalles del incidente; el reporte debe ser conciso, preciso y factual","Solo indicar si la amenaza es interna o externa y el nivel de riesgo estimado"],c:1,f:"GOM 6.4: los reportes de brechas de seguridad deben incluir: ubicación, hora, individuos involucrados y detalles del incidente. Deben ser concisos, precisos y factuales."},
+  {t:"Reporte de seguridad — cuándo",q:"¿Cuándo debe reportarse una brecha de seguridad o actividad sospechosa?",o:["Antes del final del turno de trabajo en que se produjo","Lo antes posible ('as soon as practicable'), comunicándolo a un supervisor o a la autoridad aeroportuaria pertinente","En las 24 horas siguientes, usando el formulario estándar de seguridad"],c:1,f:"GOM 6.4: todo el personal debe reportar de inmediato cualquier brecha de seguridad o actividad sospechosa a un supervisor o a la autoridad aeroportuaria, y hacerlo 'as soon as practicable'."},
+  {t:"Obligación seguridad",q:"¿Qué obligación tienen todos los empleados de ground operations respecto a la seguridad aérea?",o:["Informar solo de incidentes que afecten directamente a sus funciones","Reportar inmediatamente cualquier brecha de seguridad o actividad sospechosa a un supervisor o a la autoridad aeroportuaria, y recibir formación inicial y recurrente de seguridad","Completar un checklist de seguridad al inicio y al final de cada turno sin necesidad de reportes ad hoc"],c:1,f:"GOM 6.4: todo el personal de ground operations está obligado por política de empresa y legislación a reportar de inmediato cualquier brecha de seguridad o actividad sospechosa, y a recibir formación de seguridad inicial y recurrente."},
+  {t:"Amenazas a la aviación",q:"¿Desde qué áreas pueden originarse amenazas a la aviación civil según el cap. 6.4.1 del GOM?",o:["Solo desde el lado aire (airside), especialmente plataforma y pistas","Tanto del lado tierra (landside) como del lado aire (airside), incluyendo instalaciones terminales, áreas de equipaje, instalaciones de tripulación, transporte y aviones en tierra o en vuelo","Solo desde el exterior del perímetro aeroportuario por parte de grupos terroristas externos"],c:1,f:"GOM 6.4.1: tanto las áreas landside como airside pueden ser objetivo, incluyendo instalaciones terminales, áreas de equipaje, instalaciones de tripulación, transporte y aviones en tierra o en vuelo."},
+  {t:"Comunicación — idioma",q:"¿En qué idioma debe realizarse toda la comunicación entre ground crew y tripulación de vuelo?",o:["En el idioma oficial del estado en que opera el aeropuerto","Siempre en inglés; el personal con comunicación regular con tripulación de vuelo debe poder comunicarse eficazmente en inglés","En inglés para vuelos internacionales y en idioma local para vuelos domésticos"],c:1,f:"GOM 6.4.2 y 4.3.7.5: toda la comunicación headset entre ground crew y tripulación de vuelo debe realizarse en inglés."},
+  {t:"eLID — fallo",q:"¿Qué ocurre si el comandante no confirma la aceptación del eLID por problemas de conexión o fallo del dispositivo?",o:["El vuelo se retrasa hasta que se restablezca la conexión","Debe aplicarse el proceso de LID en papel","El dispatcher puede confirmar el eLID en nombre del comandante si lo autoriza verbalmente"],c:1,f:"GOM 5.7.1: si no se recibe confirmación del comandante del eLID por mala conexión o fallo del dispositivo, debe aplicarse el proceso de LID en papel."},
+  {t:"LID — conservación",q:"¿Cuánto tiempo debe conservar el ground service provider una copia del LID en papel?",o:["7 días","3 meses","12 meses"],c:1,f:"GOM 5.7.1: en el caso de LID en papel, el ground service provider conserva una copia durante 3 meses."},
+  {t:"LID — pre-firma",q:"¿Está permitido pre-firmar el LIR o el LID antes de que se complete la carga?",o:["Sí, para ahorrar tiempo si el supervisor de carga garantiza que la información es correcta","No; pre-signing LIR/LID no está permitido bajo ninguna circunstancia","Solo si hay más de 3 horas de margen hasta la salida programada"],c:1,f:"GOM 5.6 y 5.7.1: 'Documents must never be pre-signed' y 'Pre-signing LIR/LID is not permitted'. La firma confirma que la carga está completada conforme a las instrucciones."},
+  {t:"Manual check-in",q:"¿Con qué frecuencia mínima debe cada aeropuerto base realizar el ejercicio de check-in manual?",o:["Una vez al mes","Una vez a la semana para bases y una vez al mes para aeropuertos; si hay L-DCS disponible en una base, una vez al mes es aceptable","Una vez por trimestre o cuando el sistema principal falle"],c:1,f:"GOM 1.2.3.2: 1 vuelo por mes para aeropuertos y 1 vuelo por semana para bases. Si la base dispone de L-DCS de respaldo, una verificación mensual es aceptable."},
+  {t:"Identidad en boarding",q:"¿Qué debe verificarse sobre los pasajeros durante el boarding en el check-in avanzado?",o:["Solo verificar la tarjeta de embarque escaneada; no se requiere verificación adicional","La identidad de todos los pasajeros debe comprobarse durante el boarding","Solo los pasajeros sin priority boarding deben verificar su identidad"],c:1,f:"GOM 2.2.1.4 j): la identidad de todos los pasajeros debe verificarse durante el boarding, sin excepciones, en operaciones de check-in avanzado."},
+  {t:"Apertura de puertas",q:"¿Quién puede abrir las puertas de cabina de la aeronave desde el exterior?",o:["Cualquier miembro del personal de handling con acreditación airside","Solo personal de tierra formado y aprobado; desde el interior, solo cabin crew formada","Solo la tripulación de vuelo tiene autorización para operar las puertas desde cualquier lado"],c:1,f:"GOM 4.3.4.3: solo personal de tierra formado y aprobado puede abrir puertas de cabina desde el exterior. Desde el interior, solo cabin crew formada."},
+  {t:"Airstairs",q:"¿Cuándo pueden los pasajeros y el personal de tierra usar las escaleras de embarque (airstairs)?",o:["Cuando estén correctamente posicionadas junto al avión","Solo cuando la puerta L1 esté abierta, los pasamanos y straps de freno estén extendidos, y la tripulación haya dado la señal de que es seguro","Siempre que el tug de las escaleras esté desconectado y los frenos activados"],c:1,f:"GOM 4.3.4.1 c): los pasajeros y el personal no deben usar las airstairs a menos que la puerta L1 esté abierta, los pasamanos y reel straps estén extendidos, y la tripulación haya señalado que es seguro."},
+  {t:"Sport equipment",q:"¿Qué límite de dimensiones máximas se aplica para artículos deportivos?",o:["Sin límite de dimensiones si el peso no supera los 20 kg","127 cm × 119 cm × 81 cm para la mayoría; con excepciones: pértiga 25×25×540 cm, kayak/surf/paddle 60×40×417 cm","Las mismas dimensiones que para el equipaje estándar: 80×120×120 cm"],c:1,f:"GOM 2.2.1.3: dimensiones máximas generales 127×119×81 cm, con excepciones específicas para pértiga (25×25×540 cm) y kayak/surf/paddle boards (60×40×417 cm)."}
+]};
+
+// ── STATE ──
+// ── TRANSLATIONS ──
+const T = {
+  es: {
+    qrTitle: 'Escanea<br><span>& Practica</span>',
+    qrSub: 'Accede al cuestionario de seguridad operacional desde tu móvil',
+    qrHint: 'Apunta la cámara del móvil al código QR',
+    qrEnter: 'Entrar directamente →',
+    selTitle: 'Elige tu módulo',
+    selSub: 'Se seleccionarán 3 preguntas aleatorias del módulo elegido',
+    bohTitle: 'Rampa', bohDesc: 'Pushback · Carga · GSE · Walkaround · Zonas de peligro',
+    fohTitle: 'Pasaje', fohDesc: 'Check-in · Embarque · Equipaje · Pasajeros · LID',
+    progOf: (a,b) => `Pregunta ${a} de ${b}`,
+    exit: 'Salir',
+    next: 'Siguiente', results: 'Ver resultados',
+    correct: '✓ Correcto.', wrong: '✗ Incorrecto.',
+    tagBoh: 'RAMPA', tagFoh: 'PASAJE',
+    resLabel: (ok,t) => `${ok} correctas de ${t} preguntas`,
+    statOk: 'Correctas', statBad: 'Incorrectas', statTotal: 'Total',
+    btnRepeat: 'Repetir (nuevas preguntas)', btnChange: 'Cambiar módulo',
+    reviewTitle: (n) => `Preguntas incorrectas (${n})`,
+    confirmAbort: '¿Salir del cuestionario? Se perderá el progreso actual.',
+    msg100: { emoji:'🏆', grade:'¡Excelente! — 3 de 3', cls:'grade-pass', color:'var(--green)', msg:'¡Perfecto! Demuestras un dominio sólido de los procedimientos de seguridad operacional. Tu conocimiento protege a tu equipo, a los pasajeros y a la aeronave. Sigue así.' },
+    msg67:  { emoji:'✅', grade:'Bien — 2 de 3', cls:'grade-ok', color:'var(--amber)', msg:'Buen resultado, pero la seguridad operacional no admite margen de error. Repasa las preguntas falladas y consulta el capítulo correspondiente del GOM antes de tu próximo turno.' },
+    msg0:   { emoji:'⚠️', grade:'Necesita repaso', cls:'grade-fail', color:'var(--red)', msg:'Los procedimientos de seguridad son la primera línea de defensa ante incidentes en rampa y en terminal. Es imprescindible repasar el GOM y completar de nuevo este cuestionario antes de operar.' }
+  },
+  en: {
+    qrTitle: 'Scan<br><span>& Practice</span>',
+    qrSub: 'Access the operational safety quiz from your mobile',
+    qrHint: 'Point your mobile camera at the QR code',
+    qrEnter: 'Enter directly →',
+    selTitle: 'Choose your module',
+    selSub: '3 random questions will be selected from the chosen module',
+    bohTitle: 'Ramp', bohDesc: 'Pushback · Loading · GSE · Walkaround · Danger zones',
+    fohTitle: 'Passenger', fohDesc: 'Check-in · Boarding · Baggage · Passengers · LID',
+    progOf: (a,b) => `Question ${a} of ${b}`,
+    exit: 'Exit',
+    next: 'Next', results: 'See results',
+    correct: '✓ Correct.', wrong: '✗ Incorrect.',
+    tagBoh: 'RAMP', tagFoh: 'PASSENGER',
+    resLabel: (ok,t) => `${ok} correct out of ${t} questions`,
+    statOk: 'Correct', statBad: 'Incorrect', statTotal: 'Total',
+    btnRepeat: 'Repeat (new questions)', btnChange: 'Change module',
+    reviewTitle: (n) => `Incorrect questions (${n})`,
+    confirmAbort: 'Exit the quiz? Current progress will be lost.',
+    msg100: { emoji:'🏆', grade:'Excellent! — 3 out of 3', cls:'grade-pass', color:'var(--green)', msg:'Perfect! You demonstrate a solid command of operational safety procedures. Your knowledge protects your team, passengers and the aircraft. Keep it up.' },
+    msg67:  { emoji:'✅', grade:'Good — 2 out of 3', cls:'grade-ok', color:'var(--amber)', msg:'Good result, but operational safety allows no margin for error. Review the incorrect questions and consult the relevant GOM chapter before your next shift.' },
+    msg0:   { emoji:'⚠️', grade:'Needs review', cls:'grade-fail', color:'var(--red)', msg:'Safety procedures are the first line of defence against ramp and terminal incidents. You must review the GOM and complete this quiz again before operating.' }
+  },
+  pt: {
+    qrTitle: 'Leia o QR<br><span>& Pratique</span>',
+    qrSub: 'Aceda ao questionário de segurança operacional a partir do seu telemóvel',
+    qrHint: 'Aponte a câmara do telemóvel para o código QR',
+    qrEnter: 'Entrar diretamente →',
+    selTitle: 'Escolha o seu módulo',
+    selSub: 'Serão selecionadas 3 perguntas aleatórias do módulo escolhido',
+    bohTitle: 'Rampa', bohDesc: 'Pushback · Carga · GSE · Walkaround · Zonas de perigo',
+    fohTitle: 'Passageiros', fohDesc: 'Check-in · Embarque · Bagagem · Passageiros · LID',
+    progOf: (a,b) => `Pergunta ${a} de ${b}`,
+    exit: 'Sair',
+    next: 'Seguinte', results: 'Ver resultados',
+    correct: '✓ Correto.', wrong: '✗ Incorreto.',
+    tagBoh: 'RAMPA', tagFoh: 'PASSAGEIROS',
+    resLabel: (ok,t) => `${ok} corretas de ${t} perguntas`,
+    statOk: 'Corretas', statBad: 'Incorretas', statTotal: 'Total',
+    btnRepeat: 'Repetir (novas perguntas)', btnChange: 'Mudar módulo',
+    reviewTitle: (n) => `Perguntas incorretas (${n})`,
+    confirmAbort: 'Sair do questionário? O progresso atual será perdido.',
+    msg100: { emoji:'🏆', grade:'Excelente! — 3 de 3', cls:'grade-pass', color:'var(--green)', msg:'Perfeito! Demonstra um domínio sólido dos procedimentos de segurança operacional. O seu conhecimento protege a sua equipa, os passageiros e a aeronave. Continue assim.' },
+    msg67:  { emoji:'✅', grade:'Bom — 2 de 3', cls:'grade-ok', color:'var(--amber)', msg:'Bom resultado, mas a segurança operacional não admite margem de erro. Reveja as perguntas erradas e consulte o capítulo correspondente do GOM antes do próximo turno.' },
+    msg0:   { emoji:'⚠️', grade:'Precisa de revisão', cls:'grade-fail', color:'var(--red)', msg:'Os procedimentos de segurança são a primeira linha de defesa contra incidentes na rampa e no terminal. É imprescindível rever o GOM e completar este questionário novamente antes de operar.' }
+  }
+};
+
+let lang = 'es';
+let currentMode = null;
+let quiz = { questions: [], idx: 0, ok: 0, bad: 0, results: [] };
+
+function setLang(l) {
+  lang = l;
+  const t = T[l];
+  // QR screen
+  document.querySelector('.qr-title').innerHTML = t.qrTitle;
+  document.querySelector('.qr-sub').textContent = t.qrSub;
+  document.querySelector('.qr-hint').lastChild.textContent = ' ' + t.qrHint;
+  document.querySelector('.qr-enter-btn').textContent = t.qrEnter;
+  // Select screen
+  document.querySelector('.sel-title').textContent = t.selTitle;
+  document.querySelector('.sel-sub').textContent = t.selSub;
+  document.querySelectorAll('.sel-card-title')[0].textContent = t.bohTitle;
+  document.querySelectorAll('.sel-card-title')[1].textContent = t.fohTitle;
+  document.querySelectorAll('.sel-card-desc')[0].textContent = t.bohDesc;
+  document.querySelectorAll('.sel-card-desc')[1].textContent = t.fohDesc;
+  // Result stat labels
+  document.querySelectorAll('.stat-lbl')[0].textContent = t.statOk;
+  document.querySelectorAll('.stat-lbl')[1].textContent = t.statBad;
+  document.querySelectorAll('.stat-lbl')[2].textContent = t.statTotal;
+  show('screen-qr');
+}
+
+// ── QR ──
+window.addEventListener('load', () => {
+  new QRCode(document.getElementById('qr-canvas'), {
+    text: QUIZ_URL,
+    width: 220,
+    height: 220,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+});
+
+// ── QUIZ LOGIC ──
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz(mode) {
+  currentMode = mode;
+  const pool = shuffle([...ALL_QUESTIONS[mode].map(q => ({ ...q, side: mode }))]);
+  quiz.questions = pool.slice(0, 3);
+  quiz.idx = 0; quiz.ok = 0; quiz.bad = 0; quiz.results = [];
+  show('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const t = T[lang];
+  const q = quiz.questions[quiz.idx];
+  const total = quiz.questions.length;
+  const progress = quiz.idx / total;
+
+  document.getElementById('prog-text').textContent = t.progOf(quiz.idx + 1, total);
+  document.getElementById('prog-pct').textContent = Math.round(progress * 100) + '%';
+  document.getElementById('prog-fill').style.width = (progress * 100) + '%';
+  document.getElementById('live-ok').textContent = quiz.ok;
+  document.getElementById('live-bad').textContent = quiz.bad;
+  document.getElementById('q-num').textContent = `${quiz.idx + 1}/${total}`;
+  document.getElementById('exit-btn-lbl').textContent = t.exit;
+
+  const tag = document.getElementById('q-tag');
+  tag.textContent = q.side === 'boh' ? t.tagBoh : t.tagFoh;
+  tag.className = 'q-tag ' + (q.side === 'boh' ? 'tag-boh' : 'tag-foh');
+  document.getElementById('q-topic').textContent = q.t;
+  document.getElementById('q-text').textContent = q.q;
+
+  document.getElementById('q-opts').innerHTML = q.o.map((o, i) => `
+    <button class="opt-btn" id="opt-${i}" onclick="answer(${i})">
+      <span class="opt-letter">${['A','B','C'][i]}</span>
+      <span>${o}</span>
+    </button>`).join('');
+
+  const fb = document.getElementById('q-fb');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  const nb = document.getElementById('next-btn');
+  nb.className = 'next-btn';
+  nb.innerHTML = quiz.idx + 1 < total
+    ? t.next + ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>'
+    : t.results + ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+}
+
+function answer(chosen) {
+  const t = T[lang];
+  const q = quiz.questions[quiz.idx];
+  const correct = q.c;
+  const isOk = chosen === correct;
+
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById('opt-' + i);
+    if (!btn) continue;
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && !isOk) btn.classList.add('wrong');
+  }
+
+  const fb = document.getElementById('q-fb');
+  fb.className = 'feedback-box show ' + (isOk ? 'ok' : 'bad');
+  fb.innerHTML = isOk
+    ? '<strong>' + t.correct + '</strong> ' + q.f
+    : '<strong>' + t.wrong + '</strong> ' + q.f;
+
+  if (isOk) quiz.ok++; else quiz.bad++;
+  quiz.results.push({ q, chosen, correct, isOk });
+
+  document.getElementById('live-ok').textContent = quiz.ok;
+  document.getElementById('live-bad').textContent = quiz.bad;
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function nextQuestion() {
+  quiz.idx++;
+  if (quiz.idx >= quiz.questions.length) showResult();
+  else renderQuestion();
+}
+
+function confirmAbort() {
+  if (confirm(T[lang].confirmAbort)) {
+    show('screen-select');
+  }
+}
+
+function showResult() {
+  const t = T[lang];
+  show('screen-result');
+  const total = quiz.questions.length;
+  const pct = Math.round((quiz.ok / total) * 100);
+
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-label').textContent = t.resLabel(quiz.ok, total);
+  document.getElementById('res-ok').textContent = quiz.ok;
+  document.getElementById('res-bad').textContent = quiz.bad;
+  document.getElementById('res-total').textContent = total;
+  document.getElementById('btn-repeat').textContent = t.btnRepeat;
+  document.getElementById('btn-change').textContent = t.btnChange;
+
+  const m = pct === 100 ? t.msg100 : pct >= 67 ? t.msg67 : t.msg0;
+
+  document.getElementById('res-emoji').textContent = m.emoji;
+  document.getElementById('res-pct').style.color = m.color;
+  const grade = document.getElementById('res-grade');
+  grade.textContent = m.grade;
+  grade.className = 'result-grade ' + m.cls;
+
+  let msgEl = document.getElementById('res-msg');
+  if (!msgEl) {
+    msgEl = document.createElement('p');
+    msgEl.id = 'res-msg';
+    msgEl.style.cssText = 'font-size:15px;line-height:1.65;color:var(--gray-light);max-width:480px;margin:0 auto 28px;text-align:center;padding:0 8px';
+    grade.insertAdjacentElement('afterend', msgEl);
+  }
+  msgEl.textContent = m.msg;
+
+  const wrong = quiz.results.filter(r => !r.isOk);
+  const rev = document.getElementById('review-section');
+  if (wrong.length === 0) { rev.innerHTML = ''; return; }
+  rev.innerHTML = `
+    <div class="review-title">${t.reviewTitle(wrong.length)}</div>
+    ${wrong.map(r => `
+      <div class="review-card">
+        <div class="review-q">${r.q.q}</div>
+        <div class="review-row"><span class="review-icon">✗</span><span class="review-given">${r.q.o[r.chosen]}</span></div>
+        <div class="review-row"><span class="review-icon review-correct">✓</span><span class="review-correct">${r.q.o[r.correct]}</span></div>
+        <div class="review-explain">${r.q.f}</div>
+      </div>`).join('')}`;
+}
+
+function restartSame() {
+  startQuiz(currentMode);
+}
+
+function show(id) {
+  document.querySelectorAll('.app > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
